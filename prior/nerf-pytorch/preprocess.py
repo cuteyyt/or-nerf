@@ -19,7 +19,7 @@ def copy_files(in_dir, out_dir):
         # filename = Path(in_img_path).name
         filename_id = int(Path(in_img_path).stem.split('_')[1][4:])
 
-        out_img_path = os.path.join(out_img_dir, f'{filename_id}.png')
+        out_img_path = os.path.join(out_img_dir, '{:0>3d}.png'.format(filename_id))
 
         shutil.copy(in_img_path, out_img_path)
 
