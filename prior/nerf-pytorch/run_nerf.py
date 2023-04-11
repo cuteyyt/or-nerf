@@ -182,8 +182,9 @@ def create_nerf(args):
                  input_ch_views=input_ch_views, use_viewdirs=args.use_viewdirs).to(device)
     grad_vars = list(model.parameters())
 
-    # TODO: add acc here
+    # TODO: add accelerate here
     model = torch.compile(model)
+    torch.set_float32_matmul_precision('high')
 
     model_fine = None
     if args.N_importance > 0:
@@ -192,8 +193,9 @@ def create_nerf(args):
                           input_ch_views=input_ch_views, use_viewdirs=args.use_viewdirs).to(device)
         grad_vars += list(model_fine.parameters())
 
-        # TODO: add acc here
+        # TODO: add accelerate here
         model_fine = torch.compile(model_fine)
+        torch.set_float32_matmul_precision('high')
 
     network_query_fn = lambda inputs, viewdirs, network_fn: run_network(inputs, viewdirs, network_fn,
                                                                         embed_fn=embed_fn,
@@ -226,8 +228,10 @@ def create_nerf(args):
         optimizer.load_state_dict(ckpt['optimizer_state_dict'])
 
         # Load model
+        model = torch.compile(model)
         model.load_state_dict(ckpt['network_fn_state_dict'])
         if model_fine is not None:
+            model_fine = torch.compile(model_fine)
             model_fine.load_state_dict(ckpt['network_fine_state_dict'])
 
     ##########################
