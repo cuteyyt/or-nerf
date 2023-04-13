@@ -21,24 +21,25 @@ def pre_lama(in_dir, out_dir):
     mask_dir = os.path.join(in_dir, 'masks')
 
     rgb_paths = [os.path.join(rgb_dir, path) for path in os.listdir(rgb_dir)]
-    rgb_paths = sorted(rgb_paths, key=lambda path: int(Path(path).stem.split('_')[1]))
+    rgb_paths = sorted(rgb_paths)
 
-    dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     with tqdm(total=len(rgb_paths)) as t_bar:
         for i, rgb_path in enumerate(rgb_paths):
             filename = Path(rgb_path).name
-
             img_id = i
+
             mask_path = os.path.join(mask_dir, filename)
 
-            out_img_path = os.path.join(out_dir, f'image{img_id}.png')
-            out_mask_path = os.path.join(out_dir, 'image{:}_mask{:0>3d}.png'.format(img_id, img_id))
+            out_img_path = os.path.join(out_dir, 'image{:0>3d}.png'.format(img_id))
+            out_mask_path = os.path.join(out_dir, 'image{:0>3d}_mask{:0>3d}.png'.format(img_id, img_id))
 
             shutil.copy(rgb_path, out_img_path)
 
             img = cv2.imread(mask_path)
-            img = cv2.dilate(img, dilate_kernel, iterations=10)
+            img = cv2.dilate(img, dilate_kernel, iterations=3)
             cv2.imwrite(out_mask_path, img)
+            # shutil.copy(mask_path, out_mask_path)
 
             t_bar.update(1)
 
@@ -64,8 +65,10 @@ def map_3d_to_2d(points3d, K, R, t, w, h):
     y_norm = pts_cam[:, 1] / pts_cam[:, 2]
     assert len(np.nonzero(pts_cam[:, 2] == 0)) != 0
 
-    new_h = 756
-    new_w = 1008
+    # new_h = 2268
+    # new_w = 4032
+    new_h = 2268 / 4.
+    new_w = 4032 / 4.
 
     new_fx = fx * (new_w / w)
     new_fy = fy * (new_h / h)
@@ -85,9 +88,9 @@ def map_3d_to_2d(points3d, K, R, t, w, h):
 def gen_cam_pram(cam, img):
     camera_param = cam.params
     fx = camera_param[0]
-    fy = camera_param[1]
-    cx = camera_param[2]
-    cy = camera_param[3]
+    fy = camera_param[0]
+    cx = camera_param[1]
+    cy = camera_param[2]
     w = cam.width
     h = cam.height
 
@@ -107,27 +110,42 @@ def gen_cam_pram(cam, img):
 
 
 # noinspection PyPep8Naming
-def map_2d_to_3d(img, masks, img_point, images, points3D, src_filename_id, out_img_points_path):
+def map_2d_to_3d(masks, img_point, images, points3D, src_file_stem):
     # Find points in the img mask area, then find the points in 3d space corresponding to these points
-    print(f'Find and map 2d points to 3d points for filename_id {src_filename_id}')
+    print(f'Find and map 2d points to 3d points for file_stem {src_file_stem}')
+    tgt_image_id = 0
+    for image_id, image in images.items():
+        file_stem = Path(image.name).stem
+
+        if file_stem == src_file_stem:
+            tgt_image_id = image_id
+            break
+
+    tgt_image = images[tgt_image_id]
+    points3d_ids_v = tgt_image.point3D_ids[tgt_image.point3D_ids > -1]
+
     points2d = list()
     points3d_indices = list()
-    for point3d_idx in tqdm(points3D):
+
+    for point3d_idx in tqdm(points3d_ids_v):
 
         image_ids = points3D[point3d_idx].image_ids
         point2d_idxs = points3D[point3d_idx].point2D_idxs
 
         for image_id, point2d_idx in zip(image_ids, point2d_idxs):
-            img_name = images[image_id].name
-            filename_id = int(Path(img_name).stem.split('_')[1])
+            file_stem = Path(images[image_id].name).stem
 
-            if filename_id == src_filename_id:
+            if file_stem == src_file_stem:
                 point2d = images[image_id].xys[point2d_idx]
+                point2d = point2d / 4.
                 point2d = point2d.astype(np.int32)
 
                 if masks[point2d[1], point2d[0]] == 1:
                     points2d.append(point2d)
                     points3d_indices.append(point3d_idx)
+
+    assert len(points2d) > 0
+    assert len(points3d_indices) > 0
 
     # Find the nearest feature point of the chosen point
     points2d = np.asarray(points2d)
@@ -135,13 +153,12 @@ def map_2d_to_3d(img, masks, img_point, images, points3D, src_filename_id, out_i
 
     img_points = np.repeat(img_point, len(points2d), axis=0)
     points2d_dist = np.linalg.norm((points2d - img_points), axis=1)
-    points2d = points2d[np.argmin(points2d_dist)][np.newaxis, :]
-    points3d_indices = points3d_indices[np.argmin(points2d_dist)]
-    points3d_indices = np.array([points3d_indices])
+    points_indices = np.argsort(points2d_dist)
 
-    draw_points_on_img(img.copy(), points2d, np.array([1]), out_img_points_path)
+    points2d = points2d[points_indices]
+    points3d_indices = points3d_indices[points_indices]
 
-    return points3d_indices
+    return points3d_indices, points2d
 
 
 def draw_masks_on_img(img, masks, out_path):
@@ -158,12 +175,12 @@ def save_masks(masks, out_path):
 
 def draw_points_on_img(img, points, labels, out_path):
     if labels[0] == 1:
-        color = (255, 255, 255)
+        color = [0, 0, 255]
     else:
-        color = (0, 0, 0)
+        color = [0, 0, 0]
 
     for coord in points:
-        cv2.circle(img, coord, 20, color, -1)
+        cv2.circle(img, coord, 10, color, -1)
 
     cv2.imwrite(out_path, img)
 
@@ -202,9 +219,6 @@ def predict_by_sam_one_img(
         masks_area[i] = mask_area[1]
     target_masks = masks_valid[np.argmax(masks_area)]
 
-    # # Use the mask with the highest prob
-    # target_masks = masks[np.argmax(scores)]
-
     save_masks(target_masks.copy(), out_masks_path)
     draw_masks_on_img(img.copy(), target_masks.copy(), out_img_masked_path)
 
@@ -216,6 +230,7 @@ def copy_imgs(in_dir, out_dir):
     print(f'Copy imgs from {in_dir} to {out_dir}')
     in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if
                 path.endswith('.jpg') or path.endswith('.png')]
+    in_paths = sorted(in_paths)[40:]
 
     for in_path in tqdm(in_paths):
         filename = Path(in_path).name
@@ -237,8 +252,7 @@ def post_sam(args, in_dir, out_dir):
     os.makedirs(out_imgs_masked_dir, exist_ok=True)
 
     # Copy imgs before inpainting
-    in_imgs_dir = os.path.join(in_dir, 'images')
-    # TODO: images should be replaced with variable
+    in_imgs_dir = os.path.join(in_dir, 'images_4')
     copy_imgs(in_imgs_dir, out_imgs_ori_dir)
 
     # Register SAM model
@@ -253,18 +267,19 @@ def post_sam(args, in_dir, out_dir):
     # Predict the 'first' img
 
     # All img paths
-    img_paths = [os.path.join(in_dir, 'images', path) for path in os.listdir(os.path.join(in_dir, 'images')) if
+    img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if
                  path.endswith('.jpg') or path.endswith('.png')]
     # TODO: pay attention to different filename
-    img_paths = sorted(img_paths, key=lambda path: int(Path(path).stem.split('_')[1]))
+    img_paths = sorted(img_paths)[40:]
 
-    # TODO: point is magic number
     img0_path = img_paths[0]
     img0_filename = Path(img0_path).name
     img0_masks_path = os.path.join(out_masks_dir, img0_filename)
     img0_points_path = os.path.join(out_imgs_points_dir, img0_filename)
     img0_masked_path = os.path.join(out_imgs_masked_dir, img0_filename)
-    img0_point = np.array([[620, 420]])
+
+    # TODO: point is magic number
+    img0_point = np.array([[670, 190]])
     img0_label = np.array([1])
 
     print('Predict \'the first\' img by sam')
@@ -274,57 +289,48 @@ def post_sam(args, in_dir, out_dir):
     cam_dir = os.path.join(in_dir, 'sparse/0')
     cameras, images, points3D = read_model(path=cam_dir, ext='.bin')
 
-    img0 = cv2.imread(img0_path)
-    src_filename_id = int(Path(img0_path).stem.split('_')[1])
-    out_img_points_path = os.path.join(out_imgs_points_dir, img0_filename)
-    img0_points3d_indices = map_2d_to_3d(
-        img0, masks0, img0_point, images, points3D, src_filename_id, out_img_points_path)
+    src_file_stem = Path(img0_path).stem
+    img0_points3d_indices, _ = map_2d_to_3d(masks0, img0_point, images, points3D, src_file_stem)
 
     print('Predict other views by sam according to corresponding 2d points')
     with tqdm(total=len(img_paths) - 1) as t_bar:
         for i, img_path in enumerate(img_paths[1:]):
             img_filename = Path(img_path).name
+            img_file_stem = Path(img_path).stem
 
             # Find the corresponding image id
             image_id = None
             for image_id, image in images.items():
-                if img_filename == image.name:
+                if img_file_stem == Path(image.name).stem:
                     break
 
             # Find the 2d points according to 3d points indices
             # One point is OK
             # More points may lead to bad results
-            # Still lead to do the projection
-            points2d_inverse = None
+            # Still need to do the projection
+            points2d = np.zeros((2, 2), dtype=np.int32)
+            cnt = 0
             for point3d_idx_ in img0_points3d_indices:
-                # image_ids_ = points3D[point3d_idx_].image_ids
-                # point2d_idxs_ = points3D[point3d_idx_].point2D_idxs
-                #
-                # for image_id_, point2d_idx_ in zip(image_ids_, point2d_idxs_):
-                #     if image_id_ == image_id:
-                #         point2d = images[image_id_].xys[point2d_idx_]
-                #         point2d = point2d.astype(np.int32)
-                #         points2d_inverse = point2d[np.newaxis, :]
-                #         break
-                #
-                # if points2d_inverse is not None:
-                #     break
                 image = images[image_id]
                 camera = cameras[image.camera_id]
                 K, R, t, w, h = gen_cam_pram(camera, image)
                 point3d = points3D[point3d_idx_].xyz
-                points2d_inverse = map_3d_to_2d(point3d[np.newaxis, :], K, R, t, w, h)
+                point2d = map_3d_to_2d(point3d[np.newaxis, :], K, R, t, w, h)
 
-            assert points2d_inverse is not None
+                if 0 <= point2d[0][0] < 1008 and 0 <= point2d[0][1] < 567:
+                    points2d[cnt] = point2d
+                    cnt += 1
 
-            # labels = np.ones((len(points2d_inverse)))
-            labels = np.array([1])
+                    if cnt >= 2:
+                        break
+
+            labels = np.ones((len(points2d)))
 
             out_masks_path = os.path.join(out_masks_dir, img_filename)
             out_img_points_path = os.path.join(out_imgs_points_dir, img_filename)
             out_img_masks_path = os.path.join(out_imgs_masked_dir, img_filename)
             predict_by_sam_one_img(
-                predictor, img_path, out_masks_path, out_img_points_path, out_img_masks_path, points2d_inverse, labels)
+                predictor, img_path, out_masks_path, out_img_points_path, out_img_masks_path, points2d, labels)
 
             t_bar.update(1)
 
@@ -348,7 +354,7 @@ def main():
     in_dir = args.in_dir
     out_dir = args.out_dir
 
-    post_sam(args, in_dir, out_dir)
+    # post_sam(args, in_dir, out_dir)
 
     out_lama_dir = os.path.join(out_dir, 'lama')
     os.makedirs(out_lama_dir, exist_ok=True)

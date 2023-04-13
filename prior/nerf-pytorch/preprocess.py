@@ -16,15 +16,14 @@ def copy_files(in_dir, out_dir):
                     path.endswith('.jpg') or path.endswith('.png')]
 
     for in_img_path in tqdm(in_img_paths):
-        # filename = Path(in_img_path).name
-        filename_id = int(Path(in_img_path).stem.split('_')[1][4:])
-
-        out_img_path = os.path.join(out_img_dir, '{:0>3d}.png'.format(filename_id))
+        filename = Path(in_img_path).name
+        file_id = int(filename.split('_')[0][5:])
+        out_img_path = os.path.join(out_img_dir, '{:0>3d}.png'.format(file_id))
 
         shutil.copy(in_img_path, out_img_path)
 
-    print(f'Copy cam params files from {in_dir} to {out_dir}')
-    shutil.copy(os.path.join(in_dir, 'poses_bounds.npy'), os.path.join(out_dir, 'poses_bounds.npy'))
+    # print(f'Copy cam params files from {in_dir} to {out_dir}')
+    # shutil.copy(os.path.join(in_dir, 'poses_bounds.npy'), os.path.join(out_dir, 'poses_bounds.npy'))
 
 
 def parse():
