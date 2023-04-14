@@ -14,6 +14,10 @@ python3 bin/predict.py \
   indir="$(pwd)"/../../data/statue-sam/lama \
   outdir="$(pwd)"/../../data/statue-sam/lama_out
 
+#python bin/predict.py model.path="$(pwd)"/../../ckpts/lama/big-lama indir="$(pwd)"/../../data/nerf_llff_room_sam/lama/ outdir="$(pwd)"/../../data/nerf_llff_room_sam/lama_out
+#python bin/predict.py model.path="$(pwd)"/../../ckpts/lama/big-lama indir="$(pwd)"/../../data/nerf_llff_room_sam/lama/ outdir="$(pwd)"/../../data/nerf_llff_room_sam/lama_refine_out refine=True
+
+
 python3 bin/predict.py \
   model.path="$(pwd)"/../../ckpts/lama/big-lama \
   indir="$(pwd)"/../../data/statue-sam/lama \

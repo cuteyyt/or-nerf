@@ -45,7 +45,7 @@ def pre_lama(in_dir, out_dir):
 
 
 # noinspection PyPep8Naming
-def map_3d_to_2d(points3d, K, R, t, w, h):
+def map_3d_to_2d(args, points3d, K, R, t, w, h):
     fx = K[0, 0]
     fy = K[1, 1]
     cx = K[0, 2]
@@ -67,8 +67,8 @@ def map_3d_to_2d(points3d, K, R, t, w, h):
 
     # new_h = 2268
     # new_w = 4032
-    new_h = 2268 / 4.
-    new_w = 4032 / 4.
+    new_h = float(args.height)
+    new_w = float(args.width)
 
     new_fx = fx * (new_w / w)
     new_fy = fy * (new_h / h)
@@ -150,15 +150,37 @@ def map_2d_to_3d(masks, img_point, images, points3D, src_file_stem):
     # Find the nearest feature point of the chosen point
     points2d = np.asarray(points2d)
     points3d_indices = np.asarray(points3d_indices)
+    #print(len(points2d), points2d.shape, img_point.shape)
 
-    img_points = np.repeat(img_point, len(points2d), axis=0)
+    # Add situation for multi image points
+    points3d_indices_list = []
+    points2d_list = []
+    for i in range(img_point.shape[0]):
+        tmp = np.asarray([img_point[i]])
+        img_points = np.repeat(tmp, len(points2d), axis=0)
+        points2d_dist = np.linalg.norm((points2d - img_points), axis=1)
+        points_indices = np.argsort(points2d_dist)
+
+        points2d = points2d[points_indices]
+        points3d_indices = points3d_indices[points_indices]
+        points2d_list.append(points2d)
+        points3d_indices_list.append(points3d_indices)
+        print(points3d_indices)
+
+    '''
+    img_points = np.repeat([img_point], len(points2d), axis=0)
     points2d_dist = np.linalg.norm((points2d - img_points), axis=1)
     points_indices = np.argsort(points2d_dist)
 
     points2d = points2d[points_indices]
     points3d_indices = points3d_indices[points_indices]
+    points2d_list.append(points2d)
+    points3d_indices_list.append(points3d_indices)
+    print(points_indices)
+    '''
+    #print(points3d_indices_list)
 
-    return points3d_indices, points2d
+    return points3d_indices_list, points2d_list
 
 
 def draw_masks_on_img(img, masks, out_path):
@@ -230,7 +252,7 @@ def copy_imgs(in_dir, out_dir):
     print(f'Copy imgs from {in_dir} to {out_dir}')
     in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if
                 path.endswith('.jpg') or path.endswith('.png')]
-    in_paths = sorted(in_paths)[40:]
+    in_paths = sorted(in_paths)
 
     for in_path in tqdm(in_paths):
         filename = Path(in_path).name
@@ -270,7 +292,8 @@ def post_sam(args, in_dir, out_dir):
     img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if
                  path.endswith('.jpg') or path.endswith('.png')]
     # TODO: pay attention to different filename
-    img_paths = sorted(img_paths)[40:]
+    #img_paths = sorted(img_paths)[40:]
+    img_paths = sorted(img_paths)
 
     img0_path = img_paths[0]
     img0_filename = Path(img0_path).name
@@ -279,8 +302,12 @@ def post_sam(args, in_dir, out_dir):
     img0_masked_path = os.path.join(out_imgs_masked_dir, img0_filename)
 
     # TODO: point is magic number
-    img0_point = np.array([[670, 190]])
+    img0_point = np.array([[530, 380], [501, 447]])
+    img0_label = np.array([1, 1])
+    '''
+    img0_point = np.array([[530, 380]])
     img0_label = np.array([1])
+    '''
 
     print('Predict \'the first\' img by sam')
     masks0 = predict_by_sam_one_img(
@@ -290,7 +317,7 @@ def post_sam(args, in_dir, out_dir):
     cameras, images, points3D = read_model(path=cam_dir, ext='.bin')
 
     src_file_stem = Path(img0_path).stem
-    img0_points3d_indices, _ = map_2d_to_3d(masks0, img0_point, images, points3D, src_file_stem)
+    img0_points3d_indices_list, _ = map_2d_to_3d(masks0, img0_point, images, points3D, src_file_stem)
 
     print('Predict other views by sam according to corresponding 2d points')
     with tqdm(total=len(img_paths) - 1) as t_bar:
@@ -308,21 +335,26 @@ def post_sam(args, in_dir, out_dir):
             # One point is OK
             # More points may lead to bad results
             # Still need to do the projection
-            points2d = np.zeros((2, 2), dtype=np.int32)
-            cnt = 0
-            for point3d_idx_ in img0_points3d_indices:
-                image = images[image_id]
-                camera = cameras[image.camera_id]
-                K, R, t, w, h = gen_cam_pram(camera, image)
-                point3d = points3D[point3d_idx_].xyz
-                point2d = map_3d_to_2d(point3d[np.newaxis, :], K, R, t, w, h)
+            points2d = np.zeros((2 * args.point_num, 2), dtype=np.int32)
+            
+            #print(img0_points3d_indices_list)
+            for i in range(len(img0_points3d_indices_list)):
+                cnt = 0
+                img0_points3d_indices = img0_points3d_indices_list[i]
+                #print(img0_points3d_indices)
+                for point3d_idx_ in img0_points3d_indices:
+                    image = images[image_id]
+                    camera = cameras[image.camera_id]
+                    K, R, t, w, h = gen_cam_pram(camera, image)
+                    point3d = points3D[point3d_idx_].xyz
+                    point2d = map_3d_to_2d(args, point3d[np.newaxis, :], K, R, t, w, h)
 
-                if 0 <= point2d[0][0] < 1008 and 0 <= point2d[0][1] < 567:
-                    points2d[cnt] = point2d
-                    cnt += 1
+                    if 0 <= point2d[0][0] < args.width and 0 <= point2d[0][1] < args.height:
+                        points2d[i * 2 + cnt] = point2d
+                        cnt += 1
 
-                    if cnt >= 2:
-                        break
+                        if cnt >= 2:
+                            break
 
             labels = np.ones((len(points2d)))
 
@@ -337,12 +369,18 @@ def post_sam(args, in_dir, out_dir):
 
 def parse():
     args = argparse.ArgumentParser()
-    args.add_argument('--in_dir', type=str, default='../../data/statue', help='todo')
-    args.add_argument('--out_dir', type=str, default='../../data/statue-sam', help='todo')
+    args.add_argument('--in_dir', type=str, default='/home/krisj/DATA/nerf_llff_data/room/', help='todo')
+    args.add_argument('--out_dir', type=str, default='../../data/nerf_llff_room_sam/', help='todo')
 
-    args.add_argument('--ckpt_path', type=str, default='../../ckpts/sam/sam_vit_h_4b8939.pth', help='todo')
+    args.add_argument('--ckpt_path', type=str, default='./ckpts/sam_vit_h_4b8939.pth', help='todo')
     args.add_argument('--model_type', type=str, default='vit_h', choices=['vit_h'], help='todo')
     args.add_argument('--device_type', type=str, default='cuda', choices=['cuda'], help='todo')
+
+    # Args for pointing
+    args.add_argument('--width', type=int, default=1008, help='todo')
+    args.add_argument('--height', type=int, default=756, help='todo')
+    args.add_argument('--point_num', type=int, default=2, help='todo')
+    
 
     opt = args.parse_args()
     return opt
@@ -354,7 +392,7 @@ def main():
     in_dir = args.in_dir
     out_dir = args.out_dir
 
-    # post_sam(args, in_dir, out_dir)
+    post_sam(args, in_dir, out_dir)
 
     out_lama_dir = os.path.join(out_dir, 'lama')
     os.makedirs(out_lama_dir, exist_ok=True)

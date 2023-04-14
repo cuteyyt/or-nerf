@@ -1,0 +1,3 @@
+- model.path=/home/krisj/projects/cor-nerf/prior/lama/../../ckpts/lama/big-lama
+- indir=/home/krisj/projects/cor-nerf/prior/lama/../../data/nerf_llff_room_sam/lama/
+- outdir=/home/krisj/projects/cor-nerf/prior/lama/../../data/nerf_llff_room_sam/lama_out

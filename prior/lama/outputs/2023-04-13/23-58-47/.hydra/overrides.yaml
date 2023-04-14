@@ -1,0 +1,3 @@
+- model.path=../../ckpts/lama/big-lama
+- indir=../../data/nerf_llff_room_sam/lama/
+- outdir=../../data/nerf_
