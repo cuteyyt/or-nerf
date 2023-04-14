@@ -81,6 +81,6 @@ fabric.properties
 **/__pycache__
 
 # User-custom
-ckpts
-data
-log
+/ckpts/
+/data/
+/logs/

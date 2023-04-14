@@ -1,0 +1,11 @@
+{
+  "nerf_llff_data": {
+    "room": {
+      "refine_params": {
+        "dilate_kernel_size": 1,
+        "dilate_iters": 10,
+        "contour_scale_size": 1
+      }
+    }
+  }
+}
