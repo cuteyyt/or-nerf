@@ -1,9 +1,22 @@
 {
   "nerf_llff_data": {
     "room": {
+      "down_factor": 4,
       "refine_params": {
-        "dilate_kernel_size": 1,
-        "dilate_iters": 10,
+        "min_contour_size": 10,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5,
+        "contour_scale_size": 3
+      }
+    }
+  },
+  "spinnerf-dataset": {
+    "10": {
+      "down_factor": 4,
+      "refine_params": {
+        "min_contour_size": 10,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
         "contour_scale_size": 1
       }
     }

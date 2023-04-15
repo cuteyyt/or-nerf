@@ -12,33 +12,58 @@ from tqdm import tqdm
 
 def scale_by_pyclipper(points, scale_size=1.):
     pco = pyclipper.PyclipperOffset()
-    pco.AddPath(points, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)  # JT_ROUND
+    pco.AddPath(points, pyclipper.JT_MITER, pyclipper.ET_CLOSEDPOLYGON)  # JT_ROUND
     scaled_poly = pco.Execute(int(scale_size))
     pco.Clear()
 
-    return np.asarray(scaled_poly)
+    try:
+        scaled_poly = np.asarray(scaled_poly)
+    except Exception as e:
+        scaled_poly = [np.array(item) for item in scaled_poly]
+    return scaled_poly
 
 
 def mask_refine(mask, **kwargs):
+    mask_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+    # Step 0. Filter irregular masks
+    mask_filtered = np.zeros_like(mask_gray)
+    if 'min_contour_size' in kwargs:
+        contours, hierarchies = cv2.findContours(mask_gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Only keep the contour with the mask area
+        if len(contours) > 1:
+            contours_refined = list()
+            for i, contour in enumerate(contours):
+                contour_area = cv2.contourArea(contour)
+                if contour_area > kwargs['min_contour_size']:
+                    contours_refined.append(contour)
+        else:
+            contours_refined = contours
+
+        cv2.drawContours(mask_filtered, contours_refined, -1, (255, 255, 255), cv2.FILLED)
+
     # Step 1. Dilate to smooth the borders, fill-in holes
     dilate_kernel_size = kwargs['dilate_kernel_size']
     dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (dilate_kernel_size, dilate_kernel_size))
-    mask_dilated = cv2.dilate(mask, dilate_kernel, iterations=kwargs['dilate_iters'])
+
+    mask_dilated = np.copy(mask_filtered)
+    contours, hierarchies = cv2.findContours(mask_dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if 'dilate_iters' in kwargs:
+        num_contours = len(contours)
+        while num_contours > 1:
+            mask_dilated = cv2.dilate(mask_dilated, dilate_kernel, iterations=kwargs['dilate_iters'])
+            contours, hierarchies = cv2.findContours(mask_dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            num_contours = len(contours)
 
     # Step 2. Scale the contour
-    # Find contours first
-    mask_gray = cv2.cvtColor(mask_dilated, cv2.COLOR_BGR2GRAY)
+    mask_scaled = np.zeros_like(mask_dilated)
+    if 'contour_scale_size' in kwargs:
+        contour_scaled = scale_by_pyclipper(contours[0].squeeze(1), scale_size=kwargs['contour_scale_size'])
+        cv2.drawContours(mask_scaled, contour_scaled, -1, (255, 255, 255), -1)
 
-    contours, hierarchies = cv2.findContours(mask_gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Scale the contour polygon
-    mask_scaled = np.zeros_like(mask_gray)
-    for contour in contours:
-        if len(contour.squeeze(1)) > 2:
-            contour_scaled = scale_by_pyclipper(contour.squeeze(1), scale_size=kwargs['contour_scale_size'])
-            cv2.fillPoly(mask_scaled, contour_scaled, (255, 255, 255))
-
-    mask_refined = cv2.cvtColor(mask_scaled, cv2.COLOR_GRAY2BGR)
+    # mask_refined = cv2.cvtColor(mask_scaled, cv2.COLOR_GRAY2BGR)
+    mask_refined = mask_scaled.copy()
 
     return mask_refined
 
@@ -48,7 +73,13 @@ def pre_lama(args):
     out_dir = os.path.join(args.out_dir, f'{args.dataset_name}_sam', args.scene_name)
     print(f'Prepare lama dataset from {in_dir} to {out_dir}')
 
-    imgs_dir = os.path.join(in_dir, 'imgs_ori')
+    # Read refine params from json path
+    with open(args.mask_refine_json, 'r') as file:
+        lama_params = json.load(file)
+        refine_params = lama_params[args.dataset_name][args.scene_name]['refine_params']
+        args.down_factor = lama_params[args.dataset_name][args.scene_name]['down_factor']
+
+    imgs_dir = os.path.join(in_dir, f'images_{args.down_factor}_ori')
     masks_dir = os.path.join(in_dir, 'masks')
 
     rgb_paths = [os.path.join(imgs_dir, path) for path in os.listdir(imgs_dir) if
@@ -76,10 +107,6 @@ def pre_lama(args):
             shutil.copy(rgb_path, out_img_path)
 
             # Refine mask files
-            # Read refine params from json path
-            with open(args.mask_refine_json, 'r') as file:
-                refine_params = json.load(file)
-                refine_params = refine_params[args.dataset_name][args.scene_name]['refine_params']
 
             mask = cv2.imread(mask_path)
             mask_refined = mask_refine(mask.copy(), **refine_params)
@@ -89,8 +116,7 @@ def pre_lama(args):
             img = cv2.imread(rgb_path)
             rgb_masked = np.copy(img)
 
-            mask_refined_gray = cv2.cvtColor(mask_refined, cv2.COLOR_BGR2GRAY)
-            rgb_masked[mask_refined_gray == 255] = [255, 255, 255]
+            rgb_masked[mask_refined == 255] = [255, 255, 255]
 
             cv2.imwrite(out_img_masked_path, rgb_masked)
 
@@ -105,6 +131,7 @@ def parse():
     parser.add_argument('--scene_name', type=str, default='', help='')
 
     parser.add_argument('--mask_refine_json', default='', type=str, help='mask refine params json path')
+    parser.add_argument('--down_factor', type=float, default=4, help='img resolution down scale factor')
 
     args = parser.parse_args()
 

@@ -117,6 +117,11 @@ def map_2d_to_3d_by_colmap(points2d, masks, image, points3D, scale=1.):
     points3d = np.asarray(points3d)
     pixel_coords = np.asarray(pixel_coords)
 
+    # Find mask contour
+    # masks_img = np.copy(masks).astype(np.uint8)
+    # masks_img[masks == 1] = 255
+    # contour = find_contours(masks_img)
+
     dists = np.empty((len(points2d), len(points3d)), dtype=np.float64)
     for i, point2d in enumerate(points2d):
         dists[i] = np.linalg.norm((point2d - pixel_coords), axis=1)
@@ -165,6 +170,13 @@ def gen_cam_pram(cam, img):
     return K, R, t, w, h
 
 
+def find_contours(img, ):
+    contours, hierarchies = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    assert len(contours) == 1
+
+    return contours[0]
+
+
 def draw_pcd(points, colors, out_path):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
@@ -197,39 +209,63 @@ def draw_points_on_img(img, points, out_path, color=None, r=5):
 
 def predict_by_sam_single_img(predictor, img, img_points, img_labels, confidence_score=0.85):
     # Predict by sam
-    predictor.set_image(img)
+    predictor.set_image(img, image_format='BGR')
+    # masks, scores, logits = predictor.predict(
+    #     point_coords=img_points,
+    #     point_labels=img_labels,
+    #     multimask_output=True,
+    # )
+    #
+    # # Choose the confidence score >= 0.85
+    # confident_indices = scores >= confidence_score
+    #
+    # # Choose the max-area mask for valid mask
+    # masks_valid = masks[confident_indices]
+    # assert len(masks_valid) > 0
+    #
+    # masks_imgs = masks_valid.astype(np.int32)
+    # masks_area = np.empty(len(masks_imgs))
+    # for i in range(len(masks_imgs)):
+    #     mask_area = np.bincount(masks_imgs[i, :, :].reshape(-1))
+    #     masks_area[i] = mask_area[1]
+    #
+    # masks_target = masks_valid[np.argmax(masks_area)]
+    # masks_target = masks_target.astype(np.int32)
+
     masks, scores, logits = predictor.predict(
         point_coords=img_points,
         point_labels=img_labels,
-        multimask_output=True,
+        multimask_output=False,
     )
-
-    # Choose the confidence score >= 0.85
-    confident_indices = scores >= confidence_score
-
-    # Choose the max-area mask for valid mask
-    masks_valid = masks[confident_indices]
-    assert len(masks_valid) > 0
-
-    masks_imgs = masks_valid.astype(np.int32)
-    masks_area = np.empty(len(masks_imgs))
-    for i in range(len(masks_imgs)):
-        mask_area = np.bincount(masks_imgs[i, :, :].reshape(-1))
-        masks_area[i] = mask_area[1]
-
-    masks_target = masks_valid[np.argmax(masks_area)]
-    masks_target = masks_target.astype(np.int32)
+    masks_target = masks[0].astype(np.int32)
 
     return masks_target
 
 
 # noinspection PyPep8Naming
 def post_sam(args, ):
+    # Read init points prompt
+    print(f'Read click-points prompt and other related params from json file {args.points_json_path}')
+    with open(args.points_json_path, 'r') as file:
+        sam_params = json.load(file)
+
+        img0_points = np.asarray(sam_params[args.dataset_name][args.scene_name]['points'])
+        img0_labels = np.ones(len(img0_points), dtype=np.int32)
+
+        print(f'points prompt are: ')
+        print(img0_points)
+
+        # Other predict params
+        args.down_factor = sam_params[args.dataset_name][args.scene_name]['down_factor']
+        args.num_points = sam_params[args.dataset_name][args.scene_name]['num_points']
+        args.confidence_score = sam_params[args.dataset_name][args.scene_name]['confidence_score']
+    print('--------------------------------')
+
     # Register related paths
     in_dir = os.path.join(args.in_dir, f'{args.dataset_name}_sparse', args.scene_name)
     out_dir = os.path.join(args.out_dir, f'{args.dataset_name}_sam', args.scene_name)
 
-    out_imgs_ori_dir = os.path.join(out_dir, 'imgs_ori')
+    out_imgs_ori_dir = os.path.join(out_dir, f'images_{args.down_factor}_ori')
     out_masks_dir = os.path.join(out_dir, 'masks')
     out_imgs_points_dir = os.path.join(out_dir, 'imgs_with_points')
     out_imgs_masked_dir = os.path.join(out_dir, 'imgs_with_masks')
@@ -240,7 +276,7 @@ def post_sam(args, ):
     os.makedirs(out_imgs_masked_dir, exist_ok=True)
 
     # Copy ori imgs from dense folder to sam folder
-    in_imgs_dir = os.path.join(in_dir, 'images')
+    in_imgs_dir = os.path.join(in_dir, f'images_{args.down_factor}')
     copy_files(in_imgs_dir, out_imgs_ori_dir, file_type=args.img_file_type)
     print('--------------------------------')
 
@@ -257,20 +293,6 @@ def post_sam(args, ):
     print('--------------------------------')
 
     # Predict the 'first' img
-
-    # Read init points prompt
-    print(f'Read click-points prompt from json file {args.points_json_path}')
-    with open(args.points_json_path, 'r') as file:
-        points_loc = json.load(file)
-
-        img0_points = np.asarray(points_loc[args.dataset_name][args.scene_name]['points'])
-        img0_labels = np.ones(len(img0_points), dtype=np.int32)
-
-        print(f'points prompt are: ')
-        print(img0_points)
-    print('--------------------------------')
-
-    # Register related paths
     img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if
                  path.lower().endswith(args.img_file_type)]
     img_paths = sorted(img_paths)
@@ -336,7 +358,7 @@ def post_sam(args, ):
 
     assert points3d is not None
 
-    print(f'Find {len(points3d)} points in the mask')
+    print(f'Find {len(points3d)} COLMAP feature points in the mask')
     print('--------------------------------')
 
     # Predict other views' mask by SAM
@@ -401,7 +423,10 @@ def parse():
     parser.add_argument('--device_type', type=str, default='cuda', choices=['cuda'], help='device')
 
     parser.add_argument('--points_json_path', type=str, default='', help='init points loc json path')
+    parser.add_argument('--down_factor', type=float, default=4, help='img resolution down scale factor')
     parser.add_argument('--confidence_score', type=float, default=0.85, help='sam output confidence threshold')
+    parser.add_argument("--num_points", default=3, type=int,
+                        help='sample num_points*num_points_prompt points for other views')
 
     parser.add_argument("--min_depth_percentile",
                         help="minimum visualization depth percentile",
@@ -409,8 +434,6 @@ def parse():
     parser.add_argument("--max_depth_percentile",
                         help="maximum visualization depth percentile",
                         type=float, default=95)
-    parser.add_argument("--num_points", default=3, type=int,
-                        help='sample num_points*num_points_prompt points for other views')
 
     args = parser.parse_args()
 

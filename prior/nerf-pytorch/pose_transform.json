@@ -1,0 +1,14 @@
+{
+  "nerf_llff_data": {
+    "room": {
+      "down_factor": 4,
+      "valid_views": 41
+    }
+  },
+  "spinnerf-dataset": {
+    "10": {
+      "down_factor": 4,
+      "valid_views": 60
+    }
+  }
+}

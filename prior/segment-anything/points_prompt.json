@@ -1,16 +1,27 @@
 {
   "nerf_llff_data": {
     "room": {
+      "down_factor": 4,
       "points": [
         [
-          530,
+          557,
           380
         ],
         [
-          501,
-          447
+          454,
+          386
+        ],
+        [
+          506,
+          445
+        ],
+        [
+          505,
+          454
         ]
-      ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
     },
     "trex": {
       "points": [
@@ -21,18 +32,25 @@
       ]
     }
   },
-  "spinnerf_dataset": {
+  "spinnerf-dataset": {
     "10": {
+      "down_factor": 4,
       "points": [
         [
-          0,
-          0
+          604,
+          175
         ],
         [
-          0,
-          0
+          679,
+          202
+        ],
+        [
+          644,
+          227
         ]
-      ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
     }
   }
 }
