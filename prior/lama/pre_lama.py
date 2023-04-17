@@ -36,6 +36,7 @@ def mask_refine(mask, **kwargs):
             contours_refined = list()
             for i, contour in enumerate(contours):
                 contour_area = cv2.contourArea(contour)
+                print(contour_area)
                 if contour_area > kwargs['min_contour_size']:
                     contours_refined.append(contour)
         else:
@@ -52,6 +53,7 @@ def mask_refine(mask, **kwargs):
     if 'dilate_iters' in kwargs:
         num_contours = len(contours)
         while num_contours > 1:
+            #print(num_contours)
             mask_dilated = cv2.dilate(mask_dilated, dilate_kernel, iterations=kwargs['dilate_iters'])
             contours, hierarchies = cv2.findContours(mask_dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             num_contours = len(contours)
@@ -98,6 +100,7 @@ def pre_lama(args):
             file_id = i
 
             mask_path = os.path.join(masks_dir, filename)
+            #print(mask_path)
 
             out_img_path = os.path.join(out_lama_dir, 'image{:0>3d}.png'.format(file_id))
             out_mask_path = os.path.join(out_lama_dir, 'image{:0>3d}_mask{:0>3d}.png'.format(file_id, file_id))
@@ -109,7 +112,10 @@ def pre_lama(args):
             # Refine mask files
 
             mask = cv2.imread(mask_path)
-            mask_refined = mask_refine(mask.copy(), **refine_params)
+            if args.mask_refine:
+                mask_refined = mask_refine(mask.copy(), **refine_params)
+            else:
+                mask_refined = mask.copy()[:,:,2]
             cv2.imwrite(out_mask_path, mask_refined)
 
             # Write img with masks
@@ -117,6 +123,7 @@ def pre_lama(args):
             rgb_masked = np.copy(img)
 
             rgb_masked[mask_refined == 255] = [255, 255, 255]
+
 
             cv2.imwrite(out_img_masked_path, rgb_masked)
 
@@ -132,6 +139,7 @@ def parse():
 
     parser.add_argument('--mask_refine_json', default='', type=str, help='mask refine params json path')
     parser.add_argument('--down_factor', type=float, default=4, help='img resolution down scale factor')
+    parser.add_argument('--mask_refine', '-R',default=True, action='store_false')
 
     args = parser.parse_args()
 

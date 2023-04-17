@@ -51,7 +51,7 @@ def map_3d_to_2d_by_project(points3d, K, R, t, w, h, new_w, new_h):
     points2d = list()
     for x, y in zip(x_2d, y_2d):
         if (x < 0) or (y < 0) or (x >= new_w) or (y >= new_h):
-            continue
+             continue
         else:
             points2d.append([x, y])
 
@@ -107,9 +107,12 @@ def map_2d_to_3d_by_colmap(points2d, masks, image, points3D, scale=1.):
 
     points3d = list()
     pixel_coords = list()
-
+    #print(image)
     for i, coord in enumerate(image.xys):
+        #print(coord)
         point2d_scale = (coord * scale).astype(np.int32)
+        #print(points3d_indices_for_img[i])
+        #print(masks[point2d_scale[1], point2d_scale[0]])
         if points3d_indices_for_img[i] > -1 and masks[point2d_scale[1], point2d_scale[0]] == 1:
             points3d.append(points3D[points3d_indices_for_img[i]].xyz)
             pixel_coords.append(point2d_scale)
@@ -126,6 +129,7 @@ def map_2d_to_3d_by_colmap(points2d, masks, image, points3D, scale=1.):
     for i, point2d in enumerate(points2d):
         dists[i] = np.linalg.norm((point2d - pixel_coords), axis=1)
     sort_indices = np.argsort(dists, axis=1)
+    #print(points3d.shape, sort_indices.shape)
 
     return points3d, sort_indices, pixel_coords
 
@@ -141,8 +145,9 @@ def gen_cam_pram(cam, img):
         cy = camera_param[3]
         w = cam.width
         h = cam.height
+        #print(fx, fy)
 
-        assert fx == fy
+        #assert fx == fy
 
     elif cam.model == 'SIMPLE_RADIAL':
         fx = camera_param[0]
@@ -241,6 +246,30 @@ def predict_by_sam_single_img(predictor, img, img_points, img_labels, confidence
 
     return masks_target
 
+def convert_llff_filename(images, img_paths):
+    # Sovling conflict between existing images filename and read from image.bin filename
+    res = {}
+    images_read = []
+    images_exist = []
+    for i in range(len(img_paths)):
+        img_i = img_paths[i]
+        img_i_filename = Path(img_i).stem
+        images_exist.append(img_i_filename)
+    for image_id, image in images.items():
+        image_filestem = Path(image.name).stem
+        images_read.append(image_filestem)
+    images_read.sort()
+    images_exist.sort()
+
+    # Special judgement for spinnerf dataset
+    if (len(images_read) - len(images_exist)) == 40:
+        images_exist = ["" for i in range(40)] + images_exist
+
+    assert len(images_read) == len(images_exist)
+    for i in range(len(images_read)):
+        res[images_read[i]] = images_exist[i]
+    return res
+
 
 # noinspection PyPep8Naming
 def post_sam(args, ):
@@ -295,6 +324,7 @@ def post_sam(args, ):
     # Predict the 'first' img
     img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if
                  path.lower().endswith(args.img_file_type)]
+    #print(img_paths)
     img_paths = sorted(img_paths)
 
     img0_path = img_paths[0]
@@ -317,6 +347,8 @@ def post_sam(args, ):
     cam_dir = os.path.join(in_dir, 'sparse/0')
     cameras, images, points3D = read_model(path=cam_dir, ext='.bin')
 
+    convert_dict = convert_llff_filename(images, img_paths)
+
     # Find img0's cam pose and depths
     # TODO: What if there is no COLMAP feature points in the mask
     print('Project the points prompt into 3d space according to COLMAP data structure')
@@ -325,11 +357,13 @@ def post_sam(args, ):
     points3d, sort_indices = None, None
     for image_id, image in images.items():
         image_filestem = Path(image.name).stem
-        if image_filestem == img0_filestem:
+        #print(image_filestem)
+        #print(img0_filestem)
+        if convert_dict[image_filestem] == img0_filestem:
             K, R, t, w, h = gen_cam_pram(cameras[image.camera_id], image)
             scale = new_w / w
-
-            assert new_w / w == new_h / h
+            #print(scale, new_h / h)
+            assert np.abs(new_w / w - new_h / h) < 1e-2
 
             # points2d_scale = (img0_points * scale).astype(np.int32)
             # # img0_mask_points = np.transpose(np.nonzero(masks0))
@@ -371,7 +405,7 @@ def post_sam(args, ):
             # Find the corresponding image id
             cam, image = None, None
             for _, image in images.items():
-                if img_filestem == Path(image.name).stem:
+                if img_filestem == convert_dict[Path(image.name).stem]:
                     cam = cameras[image.camera_id]
                     break
 
@@ -380,12 +414,13 @@ def post_sam(args, ):
             new_h, new_w = img.shape[:2]
             K, R, t, w, h = gen_cam_pram(cam, image)
 
-            assert new_w / w == new_h / h
+            assert np.abs(new_w / w - new_h / h) < 1e-2
 
             points2d_raw = map_3d_to_2d_by_project(points3d, K, R, t, w, h, new_w, new_h)
 
             points2d = list()
             for sort_index in sort_indices:
+
                 points2d.append(points2d_raw[sort_index[:args.num_points]])
             points2d = np.concatenate(points2d, axis=0)
 

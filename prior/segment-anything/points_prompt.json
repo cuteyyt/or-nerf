@@ -4,49 +4,175 @@
       "down_factor": 4,
       "points": [
         [
-          557,
-          380
+          503, 448
         ],
         [
-          454,
-          386
+          504, 386
         ],
         [
-          506,
-          445
+          419,343
         ],
         [
-          505,
-          454
+          574,416
         ]
       ],
       "num_points": 1,
       "confidence_score": 0.85
     },
-    "trex": {
+  
+    "flower": {
+      "down_factor": 4,
       "points": [
         [
-          0,
-          0
+          683, 459
+        ],
+        [
+          852, 507
+        ],
+        [
+          792, 502
         ]
-      ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "horns": {
+      "down_factor": 4,
+      "points": [
+        [
+          370, 296
+        ],
+        [
+          577, 398
+        ],
+        [
+          641, 177
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "fortress": {
+      "down_factor": 4,
+      "points": [
+        [
+          708, 502
+        ],
+        [
+          774, 364
+        ],
+        [
+          833, 632
+        ],
+        [
+          752, 225
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "fern": {
+      "down_factor": 4,
+      "points": [
+        [
+          528, 358
+        ],
+        [
+          340, 356
+        ],
+        [
+          525, 528
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "piano": {
+      "down_factor": 4,
+      "points": [
+        [
+          621, 266
+        ],
+        [
+          529, 218
+        ],
+        [
+          576, 263
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
     }
   },
-  "spinnerf-dataset": {
+  "spinnerf_dataset": {
+    "2": {
+      "down_factor": 4,
+      "points": [
+        [
+          552,387
+        ],
+        [
+          492,287
+        ],
+        [
+          465,410
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "3": {
+      "down_factor": 4,
+      "points": [
+        [
+          336,415
+        ],
+        [
+          408,337
+        ],
+        [
+          367,233
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "4": {
+      "down_factor": 4,
+      "points": [
+        [
+          640,363
+        ],
+        [
+          697,478
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
     "10": {
       "down_factor": 4,
       "points": [
         [
-          604,
-          175
+          604, 175
         ],
         [
-          679,
-          202
+          679, 202
         ],
         [
-          644,
-          227
+          644, 227
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    }
+  },
+  "mip_360_data": {
+    "bicycle":{
+      "down_factor": 4,
+      "points": [
+        [
+          607, 239
         ]
       ],
       "num_points": 1,
