@@ -47,15 +47,18 @@ def map_3d_to_2d_by_project(points3d, K, R, t, w, h, new_w, new_h):
 
     x_2d = np.round(x_2d).astype(np.int32)
     y_2d = np.round(y_2d).astype(np.int32)
+    points2d = np.array([x_2d, y_2d]).transpose()
 
-    points2d = list()
-    for x, y in zip(x_2d, y_2d):
+    invalid_indices = list()
+    for i, (x, y) in enumerate(zip(x_2d, y_2d)):
         if (x < 0) or (y < 0) or (x >= new_w) or (y >= new_h):
-             continue
+            continue
         else:
-            points2d.append([x, y])
+            invalid_indices.append(i)
 
-    return np.asarray(points2d)
+    invalid_indices = np.asarray(invalid_indices, dtype=np.int32)
+
+    return points2d, invalid_indices
 
 
 # noinspection PyPep8Naming
@@ -107,12 +110,12 @@ def map_2d_to_3d_by_colmap(points2d, masks, image, points3D, scale=1.):
 
     points3d = list()
     pixel_coords = list()
-    #print(image)
+    # print(image)
     for i, coord in enumerate(image.xys):
-        #print(coord)
+        # print(coord)
         point2d_scale = (coord * scale).astype(np.int32)
-        #print(points3d_indices_for_img[i])
-        #print(masks[point2d_scale[1], point2d_scale[0]])
+        # print(points3d_indices_for_img[i])
+        # print(masks[point2d_scale[1], point2d_scale[0]])
         if points3d_indices_for_img[i] > -1 and masks[point2d_scale[1], point2d_scale[0]] == 1:
             points3d.append(points3D[points3d_indices_for_img[i]].xyz)
             pixel_coords.append(point2d_scale)
@@ -129,7 +132,7 @@ def map_2d_to_3d_by_colmap(points2d, masks, image, points3D, scale=1.):
     for i, point2d in enumerate(points2d):
         dists[i] = np.linalg.norm((point2d - pixel_coords), axis=1)
     sort_indices = np.argsort(dists, axis=1)
-    #print(points3d.shape, sort_indices.shape)
+    # print(points3d.shape, sort_indices.shape)
 
     return points3d, sort_indices, pixel_coords
 
@@ -145,9 +148,9 @@ def gen_cam_pram(cam, img):
         cy = camera_param[3]
         w = cam.width
         h = cam.height
-        #print(fx, fy)
+        # print(fx, fy)
 
-        #assert fx == fy
+        # assert fx == fy
 
     elif cam.model == 'SIMPLE_RADIAL':
         fx = camera_param[0]
@@ -246,8 +249,9 @@ def predict_by_sam_single_img(predictor, img, img_points, img_labels, confidence
 
     return masks_target
 
+
 def convert_llff_filename(images, img_paths):
-    # Sovling conflict between existing images filename and read from image.bin filename
+    # Solving conflict between existing images filename and read from image.bin filename
     res = {}
     images_read = []
     images_exist = []
@@ -324,7 +328,7 @@ def post_sam(args, ):
     # Predict the 'first' img
     img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if
                  path.lower().endswith(args.img_file_type)]
-    #print(img_paths)
+    # print(img_paths)
     img_paths = sorted(img_paths)
 
     img0_path = img_paths[0]
@@ -357,12 +361,12 @@ def post_sam(args, ):
     points3d, sort_indices = None, None
     for image_id, image in images.items():
         image_filestem = Path(image.name).stem
-        #print(image_filestem)
-        #print(img0_filestem)
+        # print(image_filestem)
+        # print(img0_filestem)
         if convert_dict[image_filestem] == img0_filestem:
             K, R, t, w, h = gen_cam_pram(cameras[image.camera_id], image)
             scale = new_w / w
-            #print(scale, new_h / h)
+            # print(scale, new_h / h)
             assert np.abs(new_w / w - new_h / h) < 1e-2
 
             # points2d_scale = (img0_points * scale).astype(np.int32)
@@ -414,14 +418,22 @@ def post_sam(args, ):
             new_h, new_w = img.shape[:2]
             K, R, t, w, h = gen_cam_pram(cam, image)
 
-            assert np.abs(new_w / w - new_h / h) < 1e-2
+            # assert np.abs(new_w / w - new_h / h) < 1e-2
+            assert np.isclose(new_w / w, new_h / h)
 
-            points2d_raw = map_3d_to_2d_by_project(points3d, K, R, t, w, h, new_w, new_h)
+            points2d_raw, invalid_indices = map_3d_to_2d_by_project(points3d, K, R, t, w, h, new_w, new_h)
 
             points2d = list()
             for sort_index in sort_indices:
+                sort_index_valid = sort_index.copy()
+                if len(invalid_indices) < len(sort_index):
+                    sort_index_valid = np.setdiff1d(sort_index, invalid_indices, assume_unique=True)
+                # print(sort_index_valid)
 
-                points2d.append(points2d_raw[sort_index[:args.num_points]])
+                assert len(sort_index_valid) >= args.num_points, \
+                    f'valid projected points num {len(sort_index_valid)} < required sample points num {args.num_points}'
+
+                points2d.append(points2d_raw[sort_index_valid[:args.num_points]])
             points2d = np.concatenate(points2d, axis=0)
 
             # mask = np.zeros(img.shape[:2], dtype=np.int32)
