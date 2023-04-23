@@ -7,7 +7,7 @@ from torchvision.utils import make_grid, save_image
 from tqdm import tqdm
 
 
-def imgs2video(in_dir, out_path, img_file_type=None, fps=10):
+def imgs2video(in_dir, out_path, img_file_type, fps=10):
     print(f'Cat images from {in_dir} to video {out_path}')
     # path = glob.glob(os.path.join(in_dir, '*.png'))
     img_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if path.lower().endswith(img_file_type)]

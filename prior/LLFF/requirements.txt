@@ -1,7 +1,0 @@
-jupyterlab
-tensorflow-gpu == 1.*
-matplotlib
-scipy
-numpy
-scikit-image
-imageio == 2.4.0

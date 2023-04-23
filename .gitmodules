@@ -1,0 +1,6 @@
+[submodule "prior/segment-anything"]
+	path = prior/segment-anything
+	url = https://github.com/facebookresearch/segment-anything.git
+[submodule "prior/lama"]
+	path = prior/lama
+	url = https://github.com/advimman/lama.git

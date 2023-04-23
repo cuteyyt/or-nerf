@@ -1,0 +1,338 @@
+{
+  "nerf_llff_data": {
+    "room": {
+      "down_factor": 4,
+      "points": [
+        [
+          503,
+          448
+        ],
+        [
+          504,
+          386
+        ],
+        [
+          419,
+          343
+        ],
+        [
+          574,
+          416
+        ]
+      ],
+      "num_points": 1
+    },
+    "horns": {
+      "down_factor": 4,
+      "points": [
+        [
+          370,
+          296
+        ],
+        [
+          577,
+          398
+        ],
+        [
+          641,
+          177
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "fortress": {
+      "down_factor": 4,
+      "points": [
+        [
+          708,
+          502
+        ],
+        [
+          774,
+          364
+        ],
+        [
+          833,
+          632
+        ],
+        [
+          752,
+          225
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "piano": {
+      "down_factor": 4,
+      "points": [
+        [
+          621,
+          266
+        ],
+        [
+          529,
+          218
+        ],
+        [
+          576,
+          263
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    }
+  },
+  "spinnerf_dataset": {
+    "2": {
+      "down_factor": 4,
+      "points": [
+        [
+          552,
+          387
+        ],
+        [
+          492,
+          287
+        ],
+        [
+          465,
+          410
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "3": {
+      "down_factor": 4,
+      "points": [
+        [
+          336,
+          415
+        ],
+        [
+          408,
+          337
+        ],
+        [
+          367,
+          233
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "4": {
+      "down_factor": 4,
+      "points": [
+        [
+          524,
+          346
+        ],
+        [
+          640,
+          363
+        ],
+        [
+          697,
+          478
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "7": {
+      "down_factor": 4,
+      "points": [
+        [
+          456,
+          159
+        ],
+        [
+          589,
+          170
+        ],
+        [
+          537,
+          92
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "10": {
+      "down_factor": 4,
+      "points": [
+        [
+          604,
+          175
+        ],
+        [
+          679,
+          202
+        ],
+        [
+          644,
+          227
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "12": {
+      "down_factor": 4,
+      "points": [
+        [
+          255,
+          468
+        ],
+        [
+          329,
+          404
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "book": {
+      "down_factor": 4,
+      "points": [
+        [
+          584,
+          182
+        ],
+        [
+          572,
+          270
+        ],
+        [
+          597,
+          318
+        ],
+        [
+          644,
+          166
+        ],
+        [
+          650,
+          319
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "trash": {
+      "down_factor": 4,
+      "points": [
+        [
+          627,
+          512
+        ],
+        [
+          624,
+          396
+        ],
+        [
+          617,
+          469
+        ],
+        [
+          655,
+          540
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    }
+  },
+  "ibrnet_collected_1": {
+    "qq3": {
+      "down_factor": 4,
+      "points": [
+        [
+          595,
+          253
+        ],
+        [
+          672,
+          256
+        ],
+        [
+          687,
+          381
+        ],
+        [
+          683,
+          126
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "qq6": {
+      "down_factor": 4,
+      "points": [
+        [
+          740,
+          205
+        ],
+        [
+          771,
+          233
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    },
+    "qq13": {
+      "down_factor": 4,
+      "points": [
+        [
+          750,
+          570
+        ],
+        [
+          860,
+          535
+        ],
+        [
+          528,
+          529
+        ],
+        [
+          600,
+          318
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    }
+  },
+  "mip_360_data": {
+    "bicycle": {
+      "down_factor": 4,
+      "points": [
+        [
+          607,
+          239
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    }
+  },
+  "nerf_real_360": {
+    "pinecone": {
+      "down_factor": 4,
+      "points": [
+        [
+          505,
+          378
+        ]
+      ],
+      "num_points": 1,
+      "confidence_score": 0.85
+    }
+  }
+}
