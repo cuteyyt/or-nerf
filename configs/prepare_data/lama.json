@@ -52,38 +52,74 @@
       "down_factor": 4,
       "refine_params": {
         "num_masks": 1,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5,
-        "contour_scale_size": 7
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
       }
     },
     "4": {
       "down_factor": 4,
       "refine_params": {
         "num_masks": 1,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5,
-        "contour_scale_size": 7
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
+      }
+    },
+    "7": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
       }
     },
     "10": {
       "down_factor": 4,
       "refine_params": {
         "num_masks": 1,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5,
+        "contour_scale_size": 3
+      }
+    },
+    "12": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
         "dilate_kernel_size": 3,
         "dilate_iters": 3,
-        "contour_scale_size": 1
+        "contour_scale_size": 3
+      }
+    },
+    "book": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
+      }
+    },
+    "trash": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5,
+        "contour_scale_size": 3
       }
     }
   },
-  "ibr_dataset": {
+  "ibrnet_data": {
     "qq3": {
       "down_factor": 1,
       "refine_params": {
-        "min_contour_size": 100,
+        "num_masks": 1,
         "dilate_kernel_size": 3,
         "dilate_iters": 3,
-        "contour_scale_size": 1
+        "contour_scale_size": 3
       }
     }
   }

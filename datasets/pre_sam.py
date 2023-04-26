@@ -28,7 +28,12 @@ filename_convert_dict = {
     'spinnerf_dataset': {
         '2': None,
         '3': None,
-        '4': None
+        '4': None,
+        '7': None,
+        '10': None,
+        '12': None,
+        'book': None,
+        'trash': None
     }
 }
 
