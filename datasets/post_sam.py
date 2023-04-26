@@ -57,16 +57,39 @@ def filter_points2d_raw(points2d_raw, sort_indices, invalid_indices, num_points=
     return points2d
 
 
-def predict_by_sam_single_img(predictor, img, img_points, img_labels):
-    # Predict by prepare_data
-    predictor.set_image(img, image_format='BGR')
-    masks, scores, logits = predictor.predict(
-        point_coords=img_points,
-        point_labels=img_labels,
-        multimask_output=False,
+def predict_by_sam_single_img(predictor, img, img_points, img_labels, **params):
+    if params['multimask_output']:
+        masks, scores, logits = predictor.predict(
+            point_coords=img_points,
+            point_labels=img_labels,
+            multimask_output=params['multimask_output'],
+        )
 
-    )
-    masks_target = masks[0].astype(np.int32)
+        # Choose the confidence score >= 0.85
+        confident_indices = scores >= params['confidence_score']
+
+        # Choose the max-area mask for valid mask
+        masks_valid = masks[confident_indices]
+        assert len(masks_valid) > 0
+
+        masks_imgs = masks_valid.astype(np.int32)
+        masks_area = np.empty(len(masks_imgs))
+        for i in range(len(masks_imgs)):
+            mask_area = np.bincount(masks_imgs[i, :, :].reshape(-1))
+            masks_area[i] = mask_area[1]
+
+        masks_target = masks_valid[np.argmax(masks_area)]
+        masks_target = masks_target.astype(np.int32)
+
+    else:
+        predictor.set_image(img, image_format='BGR')
+        masks, scores, logits = predictor.predict(
+            point_coords=img_points,
+            point_labels=img_labels,
+            multimask_output=False,
+
+        )
+        masks_target = masks[0].astype(np.int32)
 
     return masks_target
 
@@ -126,6 +149,9 @@ def post_sam(args, ):
         if 'refine_params' in json_content[dataset_name][scene_name]:
             refine_params = json_content[dataset_name][scene_name]['refine_params']
             is_mask_refine = True
+
+        if 'pred_params' in json_content[dataset_name][scene_name]:
+            pred_params = json_content[dataset_name][scene_name]['pred_params']
 
     print('--------------------------------')
 

@@ -125,7 +125,7 @@
   },
   "spinnerf_dataset": {
     "2": {
-      "num_imgs": 60,
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
@@ -144,6 +144,7 @@
       "num_points": 1
     },
     "3": {
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
@@ -159,10 +160,10 @@
           233
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "num_points": 1
     },
     "4": {
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
@@ -178,29 +179,29 @@
           478
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "num_points": 1
     },
     "7": {
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
-          456,
-          159
+          494,
+          121
         ],
         [
-          589,
-          170
+          529,
+          225
         ],
         [
-          537,
-          92
+          561,
+          71
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "num_points": 1
     },
     "10": {
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
@@ -216,94 +217,89 @@
           227
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "num_points": 1
     },
     "12": {
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
-          255,
-          468
+          524,
+          219
         ],
         [
-          329,
-          404
+          603,
+          202
+        ],
+        [
+          536,
+          335
+        ],
+        [
+          632,
+          322
+        ],
+        [
+          586,
+          416
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "num_points": 1
     },
     "book": {
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
-          584,
-          182
+          544,
+          185
         ],
         [
-          572,
-          270
+          590,
+          243
         ],
         [
-          597,
-          318
-        ],
-        [
-          644,
-          166
-        ],
-        [
-          650,
-          319
+          646,
+          306
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "num_points": 1
     },
     "trash": {
+      "num_imgs": 40,
       "down_factor": 4,
       "points": [
         [
-          627,
-          512
+          596,
+          386
         ],
         [
-          624,
-          396
+          662,
+          433
         ],
         [
-          617,
-          469
+          640,
+          513
         ],
         [
-          655,
-          540
+          577,
+          475
         ]
       ],
       "num_points": 1,
-      "confidence_score": 0.85
+      "pred_params": {
+        "multimask_output": true,
+        "confidence_score": 0.85
+      }
     }
   },
-  "ibrnet_dataset": {
+  "ibrnet_data": {
     "qq3": {
-      "down_factor": 4,
+      "down_factor": 1,
       "points": [
         [
           595,
           253
-        ],
-        [
-          672,
-          256
-        ],
-        [
-          687,
-          381
-        ],
-        [
-          683,
-          126
         ]
       ],
       "num_points": 1
