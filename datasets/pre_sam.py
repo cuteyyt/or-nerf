@@ -21,6 +21,12 @@ filename_convert_dict = {
         'room': None,
         'horns': None,
         'fortress': lambda x: 'image' + '{:0>3d}'.format(int(x.split('_')[1]) - 1800),
+    },
+    'llff_real_iconic': {
+        'data5_piano': lambda x: 'image' + '{:0>3d}'.format(int(x.split('_')[1]) - 2096),
+    },
+    'spinnerf_dataset': {
+        '2': None,
     }
 }
 
@@ -124,41 +130,20 @@ def main():
         params_json = json_content[dataset_name][scene_name]
         params = dict(params, **params_json)
 
-    if dataset_name == 'nerf_llff_data':
-        # Down sample images to desired resolution
-        in_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images_{params["down_factor"]}')
-        out_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
-        handle_imgs(in_img_dir, out_img_dir, **params)
+    # Down sample images to desired resolution
+    in_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images_{params["down_factor"]}')
+    out_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
+    handle_imgs(in_img_dir, out_img_dir, **params)
 
-        # Handle cam params
-        in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
-        out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
-        handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
+    # Handle cam params
+    in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
+    out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
+    handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
 
-        # Warp a video
-        in_img_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
-        out_path = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, 'input_views.mp4')
-        # num_imgs = len([os.path.join(in_img_dir, path) for path in os.listdir(in_img_dir)
-        #                 if path.lower().endswith(img_file_type)])
-        # fps = num_imgs // 3
-        imgs2video(in_img_dir, out_path, params['img_file_type'], fps=10)
-
-    elif dataset_name == 'spinnerf_dataset':
-        in_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images_{params["down_factor"]}')
-        out_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
-        params['num_imgs'] = 60
-        handle_imgs(in_img_dir, out_img_dir, **params)
-
-    elif dataset_name == 'ibrnet_dataset':
-        pass
-    elif dataset_name == 'dmsr':
-        pass
-    elif dataset_name == 'nerf_synthetic':
-        pass
-    elif dataset_name == 'nerf_real_360':
-        pass
-    elif dataset_name == 'mip_360_dataset':
-        pass
+    # Warp a video
+    in_img_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
+    out_path = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, 'input_views.mp4')
+    imgs2video(in_img_dir, out_path, params['img_file_type'], fps=10)
 
 
 if __name__ == '__main__':

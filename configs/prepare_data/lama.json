@@ -25,11 +25,13 @@
         "dilate_iters": 5,
         "contour_scale_size": 5
       }
-    },
-    "piano": {
+    }
+  },
+  "llff_real_iconic": {
+    "data5_piano": {
       "down_factor": 4,
       "refine_params": {
-        "min_contour_size": 10,
+        "num_masks": 1,
         "dilate_kernel_size": 7,
         "dilate_iters": 7,
         "contour_scale_size": 5
