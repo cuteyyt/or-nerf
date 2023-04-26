@@ -2,24 +2,54 @@
 This file prepare a 'sparse' folder for run NeRF without delete
 """
 import argparse
+import copy
 import json
 import os
 import shutil
+import sys
 from pathlib import Path
 from subprocess import check_output
 
 from tqdm import tqdm
 
+sys.path.append(os.getcwd())  # noqa
+from utils.colmap.read_write_model import read_model, write_images_binary
+from utils.img import imgs2video
 
-def handle_cams(in_dir, out_dir):
+filename_convert_dict = {
+    'nerf_llff_data': {
+        'room': None,
+        'horns': None,
+        'fortress': lambda x: 'image' + '{:0>3d}'.format(int(x.split('_')[1]) - 1800),
+    }
+}
+
+
+# noinspection PyPep8Naming
+def handle_cams(in_dir, out_dir, dataset_name, scene_name):
     print(f'Copy cam params files from {in_dir} to {out_dir}')
     os.makedirs(out_dir, exist_ok=True)
 
+    # Copy first
     for path in tqdm(os.listdir(in_dir)):
         in_path = os.path.join(in_dir, path)
         out_path = os.path.join(out_dir, path)
 
         shutil.copy(in_path, out_path)
+
+    # check whether the filename in COLMAP files are consistent with filename in down-sample folder
+    cameras, images, points3D = read_model(path=out_dir, ext='.bin')
+
+    # Needs to re-write COLMAP files
+    if filename_convert_dict[dataset_name][scene_name] is not None:
+        images_modified = copy.deepcopy(images)
+        for image_id, image in images.items():
+            filestem = filename_convert_dict[dataset_name][scene_name](Path(image.name).stem)
+            # noinspection PyProtectedMember
+            images_modified[image_id] = \
+                images_modified[image_id]._replace(name=os.path.join(Path(image.name).parent, f'{filestem}.png'))
+
+        write_images_binary(images_modified, os.path.join(out_dir, 'images.bin'))
 
 
 def down_sample_imgs(src_dir, target_dir, down_factor, img_suffix):
@@ -103,7 +133,15 @@ def main():
         # Handle cam params
         in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
         out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
-        handle_cams(in_cam_dir, out_cam_dir)
+        handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
+
+        # Warp a video
+        in_img_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
+        out_path = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, 'input_views.mp4')
+        # num_imgs = len([os.path.join(in_img_dir, path) for path in os.listdir(in_img_dir)
+        #                 if path.lower().endswith(img_file_type)])
+        # fps = num_imgs // 3
+        imgs2video(in_img_dir, out_path, params['img_file_type'], fps=10)
 
     elif dataset_name == 'spinnerf_dataset':
         in_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images_{params["down_factor"]}')

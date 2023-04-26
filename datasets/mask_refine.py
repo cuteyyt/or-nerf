@@ -25,7 +25,6 @@ def mask_refine(mask, **kwargs):
         mask_filtered = np.zeros_like(mask_gray)
         contours, hierarchies = cv2.findContours(mask_gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        print(len(contours))
         contour_areas = list()
         for i, contour in enumerate(contours):
             contour_area = cv2.contourArea(contour)

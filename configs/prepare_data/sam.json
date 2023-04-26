@@ -100,10 +100,11 @@
           225
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
-    },
-    "piano": {
+      "num_points": 1
+    }
+  },
+  "llff_real_iconic": {
+    "data5_piano": {
       "down_factor": 4,
       "points": [
         [
