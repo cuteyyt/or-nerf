@@ -26,20 +26,59 @@
       "down_factor": 4,
       "points": [
         [
-          370,
-          296
+          383,
+          171
         ],
         [
-          577,
-          398
+          444,
+          267
         ],
         [
-          641,
-          177
+          651,
+          164
+        ],
+        [
+          574,
+          254
+        ],
+        [
+          510,
+          275
+        ],
+        [
+          488,
+          280
+        ],
+        [
+          538,
+          275
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "points_negative": [
+        [
+          589,
+          395
+        ],
+        [
+          326,
+          277
+        ],
+        [
+          506,
+          443
+        ],
+        [
+          490,
+          408
+        ]
+      ],
+      "refine_params": {
+        "num_masks": 1,
+        "neg": {
+          "num_masks": 2
+        }
+      },
+      "num_points": 1
     },
     "fortress": {
       "down_factor": 4,
@@ -246,7 +285,7 @@
       "confidence_score": 0.85
     }
   },
-  "ibrnet_collected_1": {
+  "ibrnet_dataset": {
     "qq3": {
       "down_factor": 4,
       "points": [
@@ -267,72 +306,7 @@
           126
         ]
       ],
-      "num_points": 1,
-      "confidence_score": 0.85
-    },
-    "qq6": {
-      "down_factor": 4,
-      "points": [
-        [
-          740,
-          205
-        ],
-        [
-          771,
-          233
-        ]
-      ],
-      "num_points": 1,
-      "confidence_score": 0.85
-    },
-    "qq13": {
-      "down_factor": 4,
-      "points": [
-        [
-          750,
-          570
-        ],
-        [
-          860,
-          535
-        ],
-        [
-          528,
-          529
-        ],
-        [
-          600,
-          318
-        ]
-      ],
-      "num_points": 1,
-      "confidence_score": 0.85
-    }
-  },
-  "mip_360_data": {
-    "bicycle": {
-      "down_factor": 4,
-      "points": [
-        [
-          607,
-          239
-        ]
-      ],
-      "num_points": 1,
-      "confidence_score": 0.85
-    }
-  },
-  "nerf_real_360": {
-    "pinecone": {
-      "down_factor": 4,
-      "points": [
-        [
-          505,
-          378
-        ]
-      ],
-      "num_points": 1,
-      "confidence_score": 0.85
+      "num_points": 1
     }
   }
 }
