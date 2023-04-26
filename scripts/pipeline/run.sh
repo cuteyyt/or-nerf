@@ -16,3 +16,17 @@ sh scripts/pipeline/gen_lama_prior.sh spinnerf_dataset 10 data
 sh scripts/pipeline/gen_lama_prior.sh spinnerf_dataset 12 data
 sh scripts/pipeline/gen_lama_prior.sh spinnerf_dataset book data
 sh scripts/pipeline/gen_lama_prior.sh spinnerf_dataset trash data
+
+# ibrnet_data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq3 data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq6 data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq10 data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq11 data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq13 data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq16 data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq17 data
+sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq21 data
+
+# nerf_real_360
+
+# nerf_synthetic_colmap

@@ -33,10 +33,17 @@ filename_convert_dict = {
         '10': None,
         '12': None,
         'book': None,
-        'trash': None
+        'trash': None,
     },
     'ibrnet_data': {
-
+        'qq3': None,
+        'qq6': None,
+        'qq10': None,
+        'qq11': None,
+        'qq13': None,
+        'qq16': None,
+        'qq17': None,
+        'qq21': None,
     }
 }
 
@@ -77,21 +84,21 @@ def down_sample_imgs(src_dir, target_dir, down_factor, img_suffix):
     os.makedirs(target_dir)
     check_output('cp {}/* {}'.format(src_dir, target_dir), shell=True)
 
-    args = ' '.join(['mogrify', '-resize', resize_arg, '-format', 'png', '*.{}'.format(img_suffix)])
+    args = ' '.join(['mogrify', '-resize', resize_arg, '-format', 'png', '*{}'.format(img_suffix)])
     print(args)
     os.chdir(target_dir)
     check_output(args, shell=True)
     os.chdir(cwd)
 
     if img_suffix != 'png':
-        check_output('rm {}/*.{}'.format(target_dir, img_suffix), shell=True)
+        check_output('rm {}/*{}'.format(target_dir, img_suffix), shell=True)
         print('Removed duplicates')
     print('Done')
 
 
 def handle_imgs(in_dir, out_dir, **kwargs):
     if not os.path.exists(in_dir):
-        img_suffix = Path(os.path.join(in_dir, os.listdir(in_dir)[0])).suffix
+        img_suffix = Path(os.path.join(in_dir, os.listdir(os.path.join(Path(in_dir).parent, 'images'))[0])).suffix
         src_dir = f'{Path(in_dir).parent}/{Path(in_dir).name.split("_")[0]}'
         down_sample_imgs(src_dir, in_dir, kwargs['down_factor'], img_suffix)
 

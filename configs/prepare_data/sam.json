@@ -308,11 +308,181 @@
       "down_factor": 1,
       "points": [
         [
-          595,
-          253
+          584,
+          220
+        ],
+        [
+          675,
+          227
+        ],
+        [
+          574,
+          271
+        ],
+        [
+          664,
+          269
+        ],
+        [
+          624,
+          243
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "qq6": {
+      "down_factor": 1,
+      "points": [
+        [
+          721,
+          164
+        ],
+        [
+          772,
+          186
+        ],
+        [
+          718,
+          240
+        ],
+        [
+          772,
+          245
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "qq10": {
+      "down_factor": 1,
+      "points": [
+        [
+          586,
+          473
+        ],
+        [
+          502,
+          681
+        ],
+        [
+          566,
+          681
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "qq11": {
+      "down_factor": 1,
+      "points": [
+        [
+          617,
+          406
+        ],
+        [
+          546,
+          580
+        ],
+        [
+          648,
+          595
+        ],
+        [
+          465,
+          715
+        ],
+        [
+          678,
+          706
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "qq13": {
+      "down_factor": 1,
+      "points": [
+        [
+          714,
+          567
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "qq16": {
+      "down_factor": 4,
+      "points": [
+        [
+          556,
+          543
+        ],
+        [
+          581,
+          550
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "qq17": {
+      "down_factor": 4,
+      "points": [
+        [
+          704,
+          601
+        ],
+        [
+          868,
+          598
+        ],
+        [
+          919,
+          574
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "qq21": {
+      "down_factor": 4,
+      "points": [
+        [
+          660,
+          419
+        ],
+        [
+          641,
+          400
+        ],
+        [
+          695,
+          448
+        ],
+        [
+          613,
+          405
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     }
   }
 }
