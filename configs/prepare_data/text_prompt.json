@@ -1,0 +1,12 @@
+{
+    "nerf_real_360": {
+        "pinecone": ["pinecone"],
+        "vasedeck": ["vase", "flower"]
+    },
+    "mip_360_data": {
+        "garden": ["vase", "yellow leaves"]
+    },
+    "synthetic_nerf": {
+        "ship": ["ship"]
+    }
+}
