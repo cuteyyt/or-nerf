@@ -10,3 +10,4 @@ sh scripts/pipeline/gen_lama_prior.sh llff_real_iconic data5_piano data
 # TODO: cam params have redundancy
 sh scripts/pipeline/gen_lama_prior.sh spinnerf_dataset 2 data
 sh scripts/pipeline/gen_lama_prior.sh spinnerf_dataset 3 data
+sh scripts/pipeline/gen_lama_prior.sh spinnerf_dataset 4 data
