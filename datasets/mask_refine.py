@@ -20,10 +20,17 @@ def mask_refine(mask, **kwargs):
     else:
         mask_gray = mask.copy()
 
+    # Step 0. For mask with slim legs/edges, may dilate first
+    mask_early_dilated = np.copy(mask_gray)
+    if 'early_dilate' in kwargs:
+        dilate_kernel_size = kwargs['dilate_kernel_size']
+        dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (dilate_kernel_size, dilate_kernel_size))
+        mask_early_dilated = cv2.dilate(mask_early_dilated, dilate_kernel, iterations=kwargs['dilate_iters'])
+
     # Step 1. Filter irregular masks
     if 'num_masks' in kwargs:
-        mask_filtered = np.zeros_like(mask_gray)
-        contours, hierarchies = cv2.findContours(mask_gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        mask_filtered = np.zeros_like(mask_early_dilated)
+        contours, hierarchies = cv2.findContours(mask_early_dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         contour_areas = list()
         for i, contour in enumerate(contours):
@@ -43,9 +50,10 @@ def mask_refine(mask, **kwargs):
     # Step 2. Dilate to smooth the borders, fill-in holes
     mask_dilated = np.copy(mask_filtered)
     if 'dilate_kernel_size' and 'dilate_iters' in kwargs:
-        dilate_kernel_size = kwargs['dilate_kernel_size']
-        dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (dilate_kernel_size, dilate_kernel_size))
-        mask_dilated = cv2.dilate(mask_dilated, dilate_kernel, iterations=kwargs['dilate_iters'])
+        if 'early_dilate' not in kwargs:
+            dilate_kernel_size = kwargs['dilate_kernel_size']
+            dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (dilate_kernel_size, dilate_kernel_size))
+            mask_dilated = cv2.dilate(mask_dilated, dilate_kernel, iterations=kwargs['dilate_iters'])
 
     # Step 3. Scale the contour
     if 'contour_scale_size' in kwargs:

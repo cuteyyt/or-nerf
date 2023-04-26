@@ -58,39 +58,35 @@ def filter_points2d_raw(points2d_raw, sort_indices, invalid_indices, num_points=
 
 
 def predict_by_sam_single_img(predictor, img, img_points, img_labels, **params):
-    if params['multimask_output']:
-        masks, scores, logits = predictor.predict(
-            point_coords=img_points,
-            point_labels=img_labels,
-            multimask_output=params['multimask_output'],
-        )
+    predictor.set_image(img, image_format='BGR')
 
-        # Choose the confidence score >= 0.85
-        confident_indices = scores >= params['confidence_score']
-
-        # Choose the max-area mask for valid mask
-        masks_valid = masks[confident_indices]
-        assert len(masks_valid) > 0
-
-        masks_imgs = masks_valid.astype(np.int32)
-        masks_area = np.empty(len(masks_imgs))
-        for i in range(len(masks_imgs)):
-            mask_area = np.bincount(masks_imgs[i, :, :].reshape(-1))
-            masks_area[i] = mask_area[1]
-
-        masks_target = masks_valid[np.argmax(masks_area)]
-        masks_target = masks_target.astype(np.int32)
+    masks, scores, logits = None, None, None
+    if params != dict():
+        for _ in range(params['pred_iters']):
+            if logits is None:
+                masks, scores, logits = predictor.predict(
+                    point_coords=img_points,
+                    point_labels=img_labels,
+                    multimask_output=False,
+                    mask_input=None
+                )
+            else:
+                masks, scores, logits = predictor.predict(
+                    point_coords=img_points,
+                    point_labels=img_labels,
+                    multimask_output=False,
+                    mask_input=logits
+                )
 
     else:
-        predictor.set_image(img, image_format='BGR')
         masks, scores, logits = predictor.predict(
             point_coords=img_points,
             point_labels=img_labels,
             multimask_output=False,
 
         )
-        masks_target = masks[0].astype(np.int32)
 
+    masks_target = masks[0].astype(np.int32)
     return masks_target
 
 
@@ -118,15 +114,16 @@ def post_sam(args, ):
     print(f'Read params from json file {json_path}')
     with open(json_path, 'r') as file:
         json_content = json.load(file)
+        scene_params = json_content[dataset_name][scene_name]
 
-        img0_points_pos = np.asarray(json_content[dataset_name][scene_name]['points'])
+        img0_points_pos = np.asarray(scene_params['points'])
         img0_labels_pos = np.ones(len(img0_points_pos), dtype=np.int32)
 
         has_negative_prompt = False
-        if 'points_negative' in json_content[dataset_name][scene_name]:
+        if 'points_negative' in scene_params:
             has_negative_prompt = True
 
-            img0_points_neg = np.asarray(json_content[dataset_name][scene_name]['points_negative'])
+            img0_points_neg = np.asarray(scene_params['points_negative'])
             img0_labels_neg = np.zeros(len(img0_points_neg), dtype=np.int32)
 
             img0_points = np.concatenate([img0_points_pos, img0_points_neg], axis=0)
@@ -142,16 +139,17 @@ def post_sam(args, ):
         print(img0_points)
         print(img0_labels)
 
-        down_factor = json_content[dataset_name][scene_name]['down_factor']
-        num_points = json_content[dataset_name][scene_name]['num_points']
+        down_factor = scene_params['down_factor']
+        num_points = scene_params['num_points']
 
         is_mask_refine = False
-        if 'refine_params' in json_content[dataset_name][scene_name]:
-            refine_params = json_content[dataset_name][scene_name]['refine_params']
+        if 'refine_params' in scene_params:
+            refine_params = scene_params['refine_params']
             is_mask_refine = True
 
-        if 'pred_params' in json_content[dataset_name][scene_name]:
-            pred_params = json_content[dataset_name][scene_name]['pred_params']
+        pred_params = dict()
+        if 'pred_params' in scene_params:
+            pred_params = scene_params['pred_params']
 
     print('--------------------------------')
 
@@ -197,7 +195,7 @@ def post_sam(args, ):
     draw_points_on_img(img0.copy(), img0_points, img0_labels, img0_points_path)
 
     print('Predict \'the first\' img by SAM...')
-    masks0 = predict_by_sam_single_img(predictor, img0.copy(), img0_points, img0_labels)
+    masks0 = predict_by_sam_single_img(predictor, img0.copy(), img0_points, img0_labels, **pred_params)
 
     # May force to refine the mask area for involving negative points prompt if necessary
     if is_mask_refine:
@@ -209,17 +207,16 @@ def post_sam(args, ):
 
     masks_neg = None
     if has_negative_prompt:
-        masks_all_pos = predict_by_sam_single_img(predictor, img0.copy(), img0_points, img0_labels_all_pos)
+        masks_all_pos = \
+            predict_by_sam_single_img(predictor, img0.copy(), img0_points, img0_labels_all_pos, **pred_params)
         masks_neg = masks_all_pos.copy()
         masks_neg[masks0 == 1] = 0
-
         # draw_masks_on_img(img0.copy(), masks_neg.copy(), img0_masked_path)
 
         # This neg mask also need to be refined
         refine_params_neg = refine_params['neg']
         masks_neg = mask_refine((masks_neg * 255).astype(np.uint8), **refine_params_neg)
         masks_neg[masks_neg == 255] = 1
-
         # draw_masks_on_img(img0.copy(), masks_neg.copy(), img0_masked_path)
 
     print('Done')
@@ -312,7 +309,7 @@ def post_sam(args, ):
                 points2d = np.concatenate([points2d_pos, points2d_neg], axis=0)
                 labels = np.concatenate([labels_pos, labels_neg], axis=0)
 
-            masks = predict_by_sam_single_img(predictor, img.copy(), points2d, labels)
+            masks = predict_by_sam_single_img(predictor, img.copy(), points2d, labels, **pred_params)
 
             # May force to refine the mask area for involving negative points prompt if necessary
             if is_mask_refine:

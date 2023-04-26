@@ -3,6 +3,7 @@ DATASET=$1
 SCENE=$2
 DATADIR=$3
 
+# Enable quit when occurring error
 set -e
 
 # Prepare a 'sparse' folder for sam processing and running NeRF without delete

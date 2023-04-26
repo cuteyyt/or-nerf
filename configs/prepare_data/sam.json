@@ -242,9 +242,20 @@
         [
           586,
           416
+        ],
+        [
+          510,
+          416
+        ],
+        [
+          644,
+          416
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "book": {
       "num_imgs": 40,
@@ -270,26 +281,25 @@
       "down_factor": 4,
       "points": [
         [
-          596,
-          386
+          627,
+          512
         ],
         [
-          662,
-          433
+          624,
+          396
         ],
         [
-          640,
-          513
+          617,
+          469
         ],
         [
-          577,
-          475
+          655,
+          540
         ]
       ],
       "num_points": 1,
       "pred_params": {
-        "multimask_output": true,
-        "confidence_score": 0.85
+        "pred_iters": 5
       }
     }
   },
