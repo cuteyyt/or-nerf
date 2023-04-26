@@ -42,19 +42,19 @@
     "2": {
       "down_factor": 4,
       "refine_params": {
-        "min_contour_size": 10,
+        "num_masks": 1,
         "dilate_kernel_size": 3,
         "dilate_iters": 3,
-        "contour_scale_size": 1
+        "contour_scale_size": 3
       }
     },
     "3": {
       "down_factor": 4,
       "refine_params": {
-        "min_contour_size": 10,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5,
-        "contour_scale_size": 7
+        "num_masks": 1,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
       }
     },
     "4": {

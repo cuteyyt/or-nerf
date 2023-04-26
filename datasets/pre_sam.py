@@ -27,6 +27,7 @@ filename_convert_dict = {
     },
     'spinnerf_dataset': {
         '2': None,
+        '3': None
     }
 }
 
@@ -91,7 +92,7 @@ def handle_imgs(in_dir, out_dir, **kwargs):
     in_paths = sorted(in_paths)
 
     if 'num_imgs' in kwargs:
-        in_paths = in_paths[:kwargs['num_imgs']]
+        in_paths = in_paths[kwargs['num_imgs']:]
 
     os.makedirs(out_dir, exist_ok=True)
     for in_path in tqdm(in_paths):
