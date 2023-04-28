@@ -182,5 +182,54 @@
         "contour_scale_size": 3
       }
     }
+  },
+  "nerf_real_360": {
+    "vasedeck": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
+        "early_dilate": true,
+        "dilate_kernel_size": 10,
+        "dilate_iters": 10,
+        "contour_scale_size": 5
+      }
+    }
+  },
+  "nerf_synthetic_colmap": {
+    "ficus": {
+      "down_factor": 1,
+      "refine_params": {
+        "early_dilate": true,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5
+      }
+    },
+    "hotdog": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5,
+        "contour_scale_size": 3
+      }
+    },
+    "materials": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5,
+        "contour_scale_size": 3
+      }
+    },
+    "ship": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5,
+        "contour_scale_size": 3
+      }
+    }
   }
 }

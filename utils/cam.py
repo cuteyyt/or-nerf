@@ -91,23 +91,23 @@ def map_2d_to_3d_colmap(points2d, masks, image, points3D, scale=1.):
     points3d_indices_for_img = image.point3D_ids
 
     points3d = list()
-    feature_points = list()
+    feature_pts = list()
     for i, coord in enumerate(image.xys):
         point2d_scale = (coord * scale).astype(np.int32)
 
         if points3d_indices_for_img[i] > -1 and masks[point2d_scale[1], point2d_scale[0]] == 1:
             points3d.append(points3D[points3d_indices_for_img[i]].xyz)
-            feature_points.append(point2d_scale)
+            feature_pts.append(point2d_scale)
 
     points3d = np.asarray(points3d)
-    feature_points = np.asarray(feature_points)
+    feature_pts = np.asarray(feature_pts)
 
     dists = np.empty((len(points2d), len(points3d)), dtype=np.float64)
     for i, point2d in enumerate(points2d):
-        dists[i] = np.linalg.norm((point2d - feature_points), axis=1)
+        dists[i] = np.linalg.norm((point2d - feature_pts), axis=1)
     sort_indices = np.argsort(dists, axis=1)
 
-    return points3d, sort_indices, feature_points
+    return points3d, sort_indices, feature_pts
 
 
 # noinspection PyPep8Naming
@@ -123,6 +123,14 @@ def gen_cam_param_colmap(cam, img):
         h = cam.height
 
     elif cam.model == 'SIMPLE_RADIAL':
+        fx = camera_param[0]
+        fy = camera_param[0]
+        cx = camera_param[1]
+        cy = camera_param[2]
+        w = cam.width
+        h = cam.height
+
+    elif cam.model == 'SIMPLE_PINHOLE':
         fx = camera_param[0]
         fy = camera_param[0]
         cx = camera_param[1]

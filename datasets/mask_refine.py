@@ -3,7 +3,7 @@ import numpy as np
 import pyclipper
 
 
-def scale_by_pyclipper(points, scale_size=1.):
+def scale_by_pyclipper(points, scale_size=1):
     pco = pyclipper.PyclipperOffset()
     pco.AddPath(points, pyclipper.JT_MITER, pyclipper.ET_CLOSEDPOLYGON)  # JT_ROUND
     scaled_poly = pco.Execute(int(scale_size))
@@ -13,12 +13,12 @@ def scale_by_pyclipper(points, scale_size=1.):
     return scaled_poly
 
 
-def mask_refine(mask, **kwargs):
+def mask_refine(mask, kwargs):
     # For finding contours, we need channel c set to 1
     if len(mask.shape) == 3 and mask.shape[2] == 3:
         mask_gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
     else:
-        mask_gray = mask.copy()
+        mask_gray = np.copy(mask)
 
     # Step 0. For mask with slim legs/edges, may dilate first
     mask_early_dilated = np.copy(mask_gray)
@@ -49,8 +49,8 @@ def mask_refine(mask, **kwargs):
 
     # Step 2. Dilate to smooth the borders, fill-in holes
     mask_dilated = np.copy(mask_filtered)
-    if 'dilate_kernel_size' and 'dilate_iters' in kwargs:
-        if 'early_dilate' not in kwargs:
+    if 'early_dilate' not in kwargs:
+        if 'dilate_kernel_size' and 'dilate_iters' in kwargs:
             dilate_kernel_size = kwargs['dilate_kernel_size']
             dilate_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (dilate_kernel_size, dilate_kernel_size))
             mask_dilated = cv2.dilate(mask_dilated, dilate_kernel, iterations=kwargs['dilate_iters'])
@@ -68,5 +68,5 @@ def mask_refine(mask, **kwargs):
     else:
         mask_scaled = np.copy(mask_dilated)
 
-    mask_refined = mask_scaled.copy()
+    mask_refined = np.copy(mask_scaled)
     return mask_refined

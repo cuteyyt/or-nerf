@@ -1,3 +1,5 @@
+# TODO: check SAM masks: need to be roughly correct
+
 # nerf_llff_data
 sh scripts/pipeline/gen_lama_prior.sh nerf_llff_data room data
 sh scripts/pipeline/gen_lama_prior.sh nerf_llff_data horns data
@@ -28,5 +30,7 @@ sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq17 data
 sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq21 data
 
 # nerf_real_360
+sh scripts/pipeline/gen_lama_prior.sh nerf_real_360 vasedeck data
 
-# nerf_synthetic_colmap
+# dmsr_data
+sh scripts/pipeline/gen_lama_prior.sh dmsr_data bathroom data

@@ -3,7 +3,7 @@
 # Dense Reconstruction
 
 # Specify path
-DATASET_PATH=data/nerf_llff_data_dense/room
+DATASET_PATH=data/nerf_synthetic_colmap/ficus
 
 # Colmap dense reconstruction in one-line
 colmap automatic_reconstructor --image_path $DATASET_PATH/images --workspace_path $DATASET_PATH

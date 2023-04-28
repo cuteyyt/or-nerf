@@ -56,7 +56,7 @@ def pre_lama(args):
 
             # Refine mask files
             mask = cv2.imread(mask_path)
-            mask_refined = mask_refine(mask.copy(), **refine_params)
+            mask_refined = mask_refine(mask.copy(), refine_params)
 
             cv2.imwrite(out_mask_path, mask_refined)
 

@@ -484,5 +484,146 @@
         "pred_iters": 5
       }
     }
+  },
+  "nerf_real_360": {
+    "vasedeck": {
+      "down_factor": 4,
+      "points": [
+        [
+          354,
+          293
+        ],
+        [
+          536,
+          287
+        ],
+        [
+          760,
+          309
+        ],
+        [
+          512,
+          530
+        ],
+        [
+          637,
+          167
+        ],
+        [
+          518,
+          586
+        ],
+        [
+          450,
+          186
+        ],
+        [
+          509,
+          419
+        ],
+        [
+          222,
+          334
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    }
+  },
+  "nerf_synthetic_colmap": {
+    "ficus": {
+      "down_factor": 1,
+      "points": [
+        [
+          364,
+          212
+        ],
+        [
+          401,
+          482
+        ],
+        [
+          452,
+          170
+        ],
+        [
+          426,
+          284
+        ],
+        [
+          367,
+          146
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 10
+      }
+    },
+    "hotdog": {
+      "down_factor": 1,
+      "points": [
+        [
+          567,
+          426
+        ],
+        [
+          613,
+          436
+        ],
+        [
+          565,
+          486
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "materials": {
+      "down_factor": 1,
+      "points": [
+        [
+          469,
+          332
+        ],
+        [
+          537,
+          335
+        ],
+        [
+          493,
+          407
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    },
+    "ship": {
+      "down_factor": 1,
+      "points": [
+        [
+          412,
+          472
+        ],
+        [
+          397,
+          288
+        ],
+        [
+          421,
+          533
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
+    }
   }
 }
