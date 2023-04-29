@@ -4,3 +4,6 @@
 [submodule "prior/lama"]
 	path = prior/lama
 	url = https://github.com/advimman/lama.git
+[submodule "prior/Grounded-Segment-Anything"]
+	path = prior/Grounded-Segment-Anything
+	url = https://github.com/IDEA-Research/Grounded-Segment-Anything.git
