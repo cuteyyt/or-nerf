@@ -1,4 +1,14 @@
 {
+    "spinnerf_dataset": {
+        "2": ["box"],
+        "3": ["backpack"],
+        "4": ["box"],
+        "7": ["box"],
+        "10": ["kettle"],
+        "12": ["chair"],
+        "book": ["book"],
+        "trash": ["trash can"]
+    },
     "nerf_real_360": {
         "pinecone": ["pinecone"],
         "vasedeck": ["vase", "flower"]

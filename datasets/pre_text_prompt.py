@@ -13,7 +13,6 @@ from tqdm import tqdm
 from PIL import Image, ImageDraw, ImageFont
 
 # Grounding DINO
-sys.path.append(os.getcwd() + "/prior/Grounded-Segment-Anything")
 import GroundingDINO.groundingdino.datasets.transforms as T
 from GroundingDINO.groundingdino.models import build_model
 from GroundingDINO.groundingdino.util import box_ops
@@ -201,11 +200,16 @@ if __name__ == "__main__":
     cam_dir = os.path.join(input_dir, 'sparse/0')
     _, images, _= read_model(path=cam_dir, ext='.bin')
 
+
     with tqdm(total=len(images) - 1) as t_bar:
         for image_id, image in images.items():
             image_filestem = Path(image.name)
             print(image_filestem)
             image_path = os.path.join(input_dir, 'images_4', image_filestem)
+            if dataset == 'spinnerf_dataset':
+                image_path = image_path[:-3] + 'png'
+            if not os.path.exists(image_path):
+                continue
             image = cv2.imread(image_path)
             mask = np.zeros((image.shape[0], image.shape[1])).astype(np.int32)
             for text_prompt in text_prompt_list:
