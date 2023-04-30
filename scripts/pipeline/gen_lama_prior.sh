@@ -6,7 +6,7 @@ DATADIR=$3
 # Enable quit when occurring error
 set -e
 
-# Prepare a 'sparse' folder for sam processing and running NeRF without delete
+# Prepare a 'sparse' folder for sam processing and running nerf without delete
 python datasets/pre_sam.py \
   --in_dir "${DATADIR}" \
   --out_dir "${DATADIR}" \

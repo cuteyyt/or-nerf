@@ -1,7 +1,9 @@
+dataset = nerf_llff_data
+scene = room
+
 expname = room
-basedir = ./logs/nerf/room
+basedir = ./logs/nerf/ori
 datadir = ./data/nerf_llff_data_sparse/room
-dataset_type = llff
 
 factor = 4
 llffhold = 8

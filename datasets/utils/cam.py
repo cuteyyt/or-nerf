@@ -110,8 +110,7 @@ def map_2d_to_3d_colmap(points2d, masks, image, points3D, scale=1.):
     return points3d, sort_indices, feature_pts
 
 
-# noinspection PyPep8Naming
-def gen_cam_param_colmap(cam, img):
+def parse_cam(cam):
     camera_param = cam.params
 
     if cam.model == 'PINHOLE':
@@ -139,10 +138,18 @@ def gen_cam_param_colmap(cam, img):
         h = cam.height
 
     else:
-        raise RuntimeError
+        raise RuntimeError(f'Undefined cam model {cam.model}')
 
+    assert fx == fy, 'nerf cam format asks focal x equals to y'
     assert cx == w / 2.
     assert cy == h / 2.
+
+    return fx, fy, cx, cy, w, h
+
+
+# noinspection PyPep8Naming
+def gen_cam_param_colmap(cam, img):
+    fx, fy, cx, cy, w, h = parse_cam(cam)
 
     K = np.eye(3)
     K[0, 0] = fx

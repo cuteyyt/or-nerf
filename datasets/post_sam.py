@@ -2,7 +2,6 @@ import argparse
 import json
 import os
 import shutil
-import sys
 from pathlib import Path
 
 import cv2
@@ -10,10 +9,9 @@ import numpy as np
 from segment_anything import sam_model_registry, SamPredictor
 from tqdm import tqdm
 
-sys.path.append(os.getcwd())  # noqa
+from mask_refine import mask_refine
 from utils.cam import map_3d_to_2d_project, map_2d_to_3d_colmap, gen_cam_param_colmap
 from utils.colmap.read_write_model import read_model
-from datasets.mask_refine import mask_refine
 
 
 def save_masks(masks, out_path):
@@ -381,8 +379,22 @@ def post_sam(args, ):
     in_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name)
     in_imgs_dir = os.path.join(in_dir, f'images_{opt["down_factor"]}')
 
-    img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if path.endswith(img_file_type)]
-    img_paths = sorted(img_paths)
+    # Read COLMAP cam params
+    in_cam_dir = os.path.join(in_dir, 'sparse/0')
+
+    # Copy cam params to sam folder
+    out_cam_dir = os.path.join(out_dir, 'sparse/0')
+    os.makedirs(out_cam_dir, exist_ok=True)
+    for file in os.listdir(in_cam_dir):
+        shutil.copy(os.path.join(in_cam_dir, file), os.path.join(out_cam_dir, file))
+
+    cameras, images, points3D = read_model(path=out_cam_dir, ext='.bin')
+
+    img_names = [images[k].name for k in images]
+    img_names = np.sort(img_names)
+
+    # img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if path.endswith(img_file_type)]
+    img_paths = [os.path.join(in_imgs_dir, f) for f in img_names]
 
     out_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name)
     out_dirs = {
@@ -407,10 +419,6 @@ def post_sam(args, ):
 
     img = cv2.imread(img_paths[0])
     masks = pred_warp(predictor, img_paths[0], out_dirs, img, points, labels, opt)
-
-    # Read COLMAP cam params
-    cam_dir = os.path.join(in_dir, 'sparse/0')
-    cameras, images, points3D = read_model(path=cam_dir, ext='.bin')
 
     # Predict other views' mask by SAM
     pred_all_views(predictor, img_paths, out_dirs, points, masks, cameras, images, points3D, opt)

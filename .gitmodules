@@ -7,3 +7,6 @@
 [submodule "prior/Grounded-Segment-Anything"]
 	path = prior/Grounded-Segment-Anything
 	url = https://github.com/IDEA-Research/Grounded-Segment-Anything.git
+[submodule "comparison/SPIN-NeRF"]
+	path = comparison/SPIN-NeRF
+	url = https://github.com/SamsungLabs/SPIn-NeRF.git

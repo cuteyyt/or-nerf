@@ -2,15 +2,14 @@ import argparse
 import json
 import os
 import shutil
-import sys
 from pathlib import Path
 
 import cv2
 import numpy as np
 from tqdm import tqdm
 
-sys.path.append(os.getcwd())  # noqa
-from datasets.mask_refine import mask_refine
+from mask_refine import mask_refine
+from utils.colmap.read_write_model import read_images_binary
 
 
 def pre_lama(args):
@@ -32,8 +31,14 @@ def pre_lama(args):
     imgs_dir = os.path.join(in_dir, f'images_{down_factor}_ori')
     masks_dir = os.path.join(in_dir, 'masks')
 
-    rgb_paths = [os.path.join(imgs_dir, path) for path in os.listdir(imgs_dir) if path.endswith(img_file_type)]
-    rgb_paths = sorted(rgb_paths)
+    cam_dir = os.path.join(in_dir, 'sparse/0')
+    images = read_images_binary(os.path.join(cam_dir, 'images.bin'))
+
+    img_names = [images[k].name for k in images]
+    img_names = np.sort(img_names)
+
+    # img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if path.endswith(img_file_type)]
+    rgb_paths = [os.path.join(imgs_dir, f) for f in img_names]
 
     out_lama_dir = os.path.join(out_dir, 'lama')
     out_rgb_masked_dir = os.path.join(out_dir, 'lama_masked')

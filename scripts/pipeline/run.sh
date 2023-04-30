@@ -32,5 +32,8 @@ sh scripts/pipeline/gen_lama_prior.sh ibrnet_data qq21 data
 # nerf_real_360
 sh scripts/pipeline/gen_lama_prior.sh nerf_real_360 vasedeck data
 
+# nerf_synthetic_colmap
+sh scripts/pipeline/gen_lama_prior.sh nerf_synthetic_colmap ficus
+
 # dmsr_data
 sh scripts/pipeline/gen_lama_prior.sh dmsr_data bathroom data

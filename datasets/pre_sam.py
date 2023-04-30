@@ -1,23 +1,23 @@
 """
-This file prepare a 'sparse' folder for run NeRF without delete
+This file prepare a 'sparse' folder for run nerf without delete
 """
 import argparse
 import copy
 import json
 import os
 import shutil
-import sys
 from pathlib import Path
 from subprocess import check_output
 
+import numpy as np
 from tqdm import tqdm
 
-sys.path.append(os.getcwd())  # noqa
 from utils.colmap.read_write_model import read_model, write_images_binary
 from utils.img import imgs2video, down_sample_imgs
 
 filename_convert_dict = {
     'nerf_llff_data': {
+        # 'room': lambda x: x.replace('JPG', 'png'),
         'fortress': lambda x: 'image' + '{:0>3d}'.format(int(x.split('_')[1]) - 1800),
     },
     'llff_real_iconic': {
@@ -31,25 +31,29 @@ def handle_cams(in_dir, out_dir, dataset_name, scene_name):
     print(f'Copy cam params files from {in_dir} to {out_dir}')
 
     # Copy first
-    for path in tqdm(os.listdir(in_dir)):
-        in_path = os.path.join(in_dir, path)
-        out_path = os.path.join(out_dir, path)
-
-        shutil.copy(in_path, out_path)
+    check_output(f'cp {os.path.join(in_dir, "cameras.bin")} {os.path.join(out_dir, "cameras.bin")}', shell=True)
+    check_output(f'cp {os.path.join(in_dir, "points3D.bin")} {os.path.join(out_dir, "points3D.bin")}', shell=True)
 
     # check whether the filename in COLMAP files are consistent with filename in down-sample folder
     cameras, images, points3D = read_model(path=out_dir, ext='.bin')
 
     # Needs to re-write COLMAP files
-    if dataset_name in filename_convert_dict and scene_name in filename_convert_dict[dataset_name]:
-        images_modified = copy.deepcopy(images)
-        for image_id, image in images.items():
+    print(f'Modify images.bin to match image name and its cam params')
+    images_modified = copy.deepcopy(images)
+    for image_id, image in tqdm(images.items()):
+        if dataset_name in filename_convert_dict and scene_name in filename_convert_dict[dataset_name]:
             filestem = filename_convert_dict[dataset_name][scene_name](Path(image.name).stem)
-            # noinspection PyProtectedMember
-            images_modified[image_id] = \
-                images_modified[image_id]._replace(name=os.path.join(Path(image.name).parent, f'{filestem}.png'))
+        else:
+            filestem = Path(image.name).stem
+        # noinspection PyProtectedMember
+        images_modified[image_id] = \
+            images_modified[image_id]._replace(name=os.path.join(Path(image.name).parent, f'{filestem}.png'))
 
         write_images_binary(images_modified, os.path.join(out_dir, 'images.bin'))
+
+    names = [images_modified[k].name for k in images_modified]
+    names = np.sort(names)
+    return names
 
 
 def handle_imgs(in_dir, out_dir, kwargs):
@@ -64,9 +68,12 @@ def handle_imgs(in_dir, out_dir, kwargs):
         down_sample_imgs(ori_img_dir, in_dir, kwargs['down_factor'], img_suffix)
 
     print(f'Copy img files from {in_dir} to {out_dir}')
-    in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if
-                path.lower().endswith(kwargs['img_file_type'])]
-    in_paths = sorted(in_paths)
+    if 'in_img_names' in kwargs:
+        in_paths = [os.path.join(in_dir, f) for f in kwargs['in_img_names']]
+    else:
+        in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if
+                    path.lower().endswith(kwargs['img_file_type'])]
+        in_paths = sorted(in_paths)
 
     if 'num_imgs' in kwargs:
         in_paths = in_paths[kwargs['num_imgs']:]
@@ -122,19 +129,20 @@ def main():
             os.makedirs(out_cam_dir)
             check_output('cp {}/* {}'.format(in_cam_dir, out_cam_dir), shell=True)
 
-    # Handle images
+    # Handle cam params first
+    in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
+    out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
+
+    os.makedirs(out_cam_dir, exist_ok=True)
+    in_img_names = handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
+    params['in_img_names'] = in_img_names
+
+    # Handle images next, this is because we need names from COLMAP
     in_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images_{params["down_factor"]}')
     out_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
 
     os.makedirs(out_img_dir, exist_ok=True)
     handle_imgs(in_img_dir, out_img_dir, params)
-
-    # Handle cam params
-    in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
-    out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
-
-    os.makedirs(out_cam_dir, exist_ok=True)
-    handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
 
     # Warp a video
     in_img_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
