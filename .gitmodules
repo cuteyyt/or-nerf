@@ -4,9 +4,9 @@
 [submodule "prior/lama"]
 	path = prior/lama
 	url = https://github.com/advimman/lama.git
-[submodule "prior/Grounded-Segment-Anything"]
-	path = prior/Grounded-Segment-Anything
-	url = https://github.com/IDEA-Research/Grounded-Segment-Anything.git
 [submodule "comparison/SPIN-NeRF"]
 	path = comparison/SPIN-NeRF
 	url = https://github.com/SamsungLabs/SPIn-NeRF.git
+[submodule "prior/Grounded-Segment-Anything.git"]
+	path = prior/Grounded-Segment-Anything.git
+	url = https://github.com/IDEA-Research/Grounded-Segment-Anything.git
