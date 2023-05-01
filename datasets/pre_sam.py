@@ -32,6 +32,7 @@ def handle_cams(in_dir, out_dir, dataset_name, scene_name):
 
     # Copy first
     check_output(f'cp {os.path.join(in_dir, "cameras.bin")} {os.path.join(out_dir, "cameras.bin")}', shell=True)
+    check_output(f'cp {os.path.join(in_dir, "images.bin")} {os.path.join(out_dir, "images.bin")}', shell=True)
     check_output(f'cp {os.path.join(in_dir, "points3D.bin")} {os.path.join(out_dir, "points3D.bin")}', shell=True)
 
     # check whether the filename in COLMAP files are consistent with filename in down-sample folder

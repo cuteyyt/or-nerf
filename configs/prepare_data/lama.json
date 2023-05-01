@@ -143,9 +143,8 @@
       "down_factor": 1,
       "refine_params": {
         "num_masks": 1,
-        "dilate_kernel_size": 3,
-        "dilate_iters": 3,
-        "contour_scale_size": 3
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5
       }
     },
     "qq13": {

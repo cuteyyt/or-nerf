@@ -383,7 +383,7 @@ def post_sam(args, ):
     in_cam_dir = os.path.join(in_dir, 'sparse/0')
 
     # Copy cam params to sam folder
-    out_cam_dir = os.path.join(out_dir, 'sparse/0')
+    out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name, 'sparse/0')
     os.makedirs(out_cam_dir, exist_ok=True)
     for file in os.listdir(in_cam_dir):
         shutil.copy(os.path.join(in_cam_dir, file), os.path.join(out_cam_dir, file))

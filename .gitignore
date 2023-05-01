@@ -85,3 +85,5 @@ fabric.properties
 /data/
 /logs/
 /prior/lama/outputs/
+/main.py
+/backup/

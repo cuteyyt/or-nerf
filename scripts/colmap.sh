@@ -14,7 +14,7 @@ colmap automatic_reconstructor --image_path $DATASET_PATH/images --workspace_pat
 # The same as LLFF https://github.com/Fyusion/LLFF
 colmap feature_extractor \
   --database_path $DATASET_PATH/database.db \
-  --image_path $DATASET_PATH/images \
+  --image_path $DATASET_PATH/images_1 \
   --ImageReader.single_camera '1'
 
 colmap exhaustive_matcher \
@@ -24,7 +24,7 @@ mkdir $DATASET_PATH/sparse
 
 colmap mapper \
   --database_path $DATASET_PATH/database.db \
-  --image_path $DATASET_PATH/images \
+  --image_path $DATASET_PATH/images_1 \
   --output_path $DATASET_PATH/sparse
 
 mkdir $DATASET_PATH/dense/0
