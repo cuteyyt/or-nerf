@@ -61,26 +61,26 @@ def handle_imgs(in_dir, out_dir, kwargs):
     # Pay attention to exif. Now we did not handle this
     # We need to check whether there is an exif transpose in the image
     # If yes, we apply the transform and re-write the image
-    ori_img_dir = os.path.join(Path(in_dir).parent, 'images')
 
     if not os.path.exists(in_dir):
+        ori_dir = os.path.join(Path(in_dir).parent, 'images')
         os.makedirs(in_dir)
-        img_suffix = Path(os.listdir(ori_img_dir)[0]).suffix.replace('.', '')
-        down_sample_imgs(ori_img_dir, in_dir, kwargs['down_factor'], img_suffix)
+
+        img_suffix = Path(os.listdir(ori_dir)[0]).suffix.replace('.', '')
+        down_sample_imgs(ori_dir, in_dir, kwargs['down_factor'], img_suffix)
 
     print(f'Copy img files from {in_dir} to {out_dir}')
-    if 'in_img_names' in kwargs:
-        in_paths = [os.path.join(in_dir, f) for f in kwargs['in_img_names']]
-    else:
-        in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if
-                    path.lower().endswith(kwargs['img_file_type'])]
-        in_paths = sorted(in_paths)
+    in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if
+                path.lower().endswith(kwargs['img_file_type'])]
+    in_paths = sorted(in_paths)
 
-    if 'num_imgs' in kwargs:
-        in_paths = in_paths[kwargs['num_imgs']:]
+    if 'img_indices' in kwargs:
+        in_paths = in_paths[kwargs['img_indices']]
 
     for in_path in tqdm(in_paths):
-        out_path = os.path.join(out_dir, Path(in_path).name)
+        img_name = Path(in_path).name
+
+        out_path = os.path.join(out_dir, img_name)
         shutil.copy(in_path, out_path)
 
 
@@ -131,14 +131,20 @@ def main():
             check_output('cp {}/* {}'.format(in_cam_dir, out_cam_dir), shell=True)
 
     # Handle cam params first
-    in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
-    out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
-
-    os.makedirs(out_cam_dir, exist_ok=True)
-    in_img_names = handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
-    params['in_img_names'] = in_img_names
+    # in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
+    # out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
+    #
+    # os.makedirs(out_cam_dir, exist_ok=True)
+    # in_img_names = handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
+    # params['in_img_names'] = in_img_names
 
     # Handle images next, this is because we need names from COLMAP
+    in_ori_img_dir = os.path.join(in_dir, dataset_name, scene_name, 'images')
+    out_ori_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'images')
+
+    os.makedirs(out_ori_img_dir, exist_ok=True)
+    check_output(f'cp {in_ori_img_dir}/* {out_ori_img_dir}', shell=True)
+
     in_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images_{params["down_factor"]}')
     out_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
 

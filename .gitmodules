@@ -1,4 +1,3 @@
-
 [submodule "prior/segment-anything"]
 	path = prior/segment-anything
 	url = https://github.com/facebookresearch/segment-anything.git
@@ -11,3 +10,6 @@
 [submodule "comparison/SPIN-NeRF"]
 	path = comparison/SPIN-NeRF
 	url = https://github.com/SamsungLabs/SPIn-NeRF.git
+[submodule "prior/LLFF"]
+	path = prior/LLFF
+	url = https://github.com/Fyusion/LLFF.git

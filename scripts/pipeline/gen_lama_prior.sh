@@ -8,11 +8,15 @@ set -e
 
 # Prepare a 'sparse' folder for sam processing and running nerf without delete
 python datasets/pre_sam.py \
-  --in_dir "${DATADIR}" \
-  --out_dir "${DATADIR}" \
-  --dataset_name "${DATASET}" \
-  --scene_name "${SCENE}" \
+  --in_dir "$DATADIR" \
+  --out_dir "$DATADIR" \
+  --dataset_name "$DATASET" \
+  --scene_name "$SCENE" \
   --json_path configs/prepare_data/sam.json
+
+# Use colmap to reconstruct file params
+cd datsets/LLFF
+python img2pose.py ../../"$DATADIR"/"$DATASET"_sparse/"$SCENE"
 
 # SAM predict
 python datasets/post_sam.py \
