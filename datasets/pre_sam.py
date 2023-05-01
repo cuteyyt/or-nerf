@@ -5,10 +5,10 @@ import argparse
 import copy
 import json
 import os
-import shutil
 from pathlib import Path
 from subprocess import check_output
 
+import cv2
 import numpy as np
 from tqdm import tqdm
 
@@ -57,31 +57,31 @@ def handle_cams(in_dir, out_dir, dataset_name, scene_name):
     return names
 
 
-def handle_imgs(in_dir, out_dir, kwargs):
+def handle_imgs(in_ori_dir, out_ori_dir, kwargs):
     # Pay attention to exif. Now we did not handle this
     # We need to check whether there is an exif transpose in the image
     # If yes, we apply the transform and re-write the image
+    print(f'Copy img files from {Path(in_ori_dir).parent} to {Path(out_ori_dir).parent}')
 
-    if not os.path.exists(in_dir):
-        ori_dir = os.path.join(Path(in_dir).parent, 'images')
-        os.makedirs(in_dir)
-
-        img_suffix = Path(os.listdir(ori_dir)[0]).suffix.replace('.', '')
-        down_sample_imgs(ori_dir, in_dir, kwargs['down_factor'], img_suffix)
-
-    print(f'Copy img files from {in_dir} to {out_dir}')
-    in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if
-                path.lower().endswith(kwargs['img_file_type'])]
-    in_paths = sorted(in_paths)
+    in_ori_paths = [os.path.join(in_ori_dir, path) for path in os.listdir(in_ori_dir) if
+                    path.lower().endswith(kwargs['img_file_type'])]
+    in_ori_paths = sorted(in_ori_paths)
 
     if 'img_indices' in kwargs:
-        in_paths = in_paths[kwargs['img_indices']]
+        in_ori_paths = in_ori_paths[kwargs['img_indices']:]
 
-    for in_path in tqdm(in_paths):
-        img_name = Path(in_path).name
+    i = 0
+    for in_ori_path in tqdm(in_ori_paths):
+        out_path = os.path.join(out_ori_dir, 'img{:0>3d}.png'.format(i))
+        img = cv2.imread(in_ori_path)
+        cv2.imwrite(out_path, img)
 
-        out_path = os.path.join(out_dir, img_name)
-        shutil.copy(in_path, out_path)
+        i += 1
+
+    out_dir = os.path.join(Path(out_ori_dir).parent, f'images_{kwargs["down_factor"]}')
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+        down_sample_imgs(out_ori_dir, out_dir, kwargs['down_factor'], img_suffix='png')
 
 
 def parse():
@@ -116,6 +116,9 @@ def main():
         params_json = json_content[dataset_name][scene_name]
         params = dict(params, **params_json)
 
+    if dataset_name == 'spinnerf_dataset':
+        params['img_indices'] = 40
+
     # Reformat nerf_synthetic_colmap structure
     if dataset_name == 'nerf_synthetic_colmap':
         # in_img_dir = os.path.join(in_dir, dataset_name, scene_name, 'colmap_results/dense/images')
@@ -143,13 +146,7 @@ def main():
     out_ori_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'images')
 
     os.makedirs(out_ori_img_dir, exist_ok=True)
-    check_output(f'cp {in_ori_img_dir}/* {out_ori_img_dir}', shell=True)
-
-    in_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images_{params["down_factor"]}')
-    out_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
-
-    os.makedirs(out_img_dir, exist_ok=True)
-    handle_imgs(in_img_dir, out_img_dir, params)
+    handle_imgs(in_ori_img_dir, out_ori_img_dir, params)
 
     # Warp a video
     in_img_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')

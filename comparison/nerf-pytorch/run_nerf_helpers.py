@@ -16,7 +16,7 @@ class Embedder:
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.create_embedding_fn()
-        
+
     def create_embedding_fn(self):
         embed_fns = []
         d = self.kwargs['input_dims']
@@ -24,23 +24,23 @@ class Embedder:
         if self.kwargs['include_input']:
             embed_fns.append(lambda x : x)
             out_dim += d
-            
+
         max_freq = self.kwargs['max_freq_log2']
         N_freqs = self.kwargs['num_freqs']
-        
+
         if self.kwargs['log_sampling']:
             freq_bands = 2.**torch.linspace(0., max_freq, steps=N_freqs)
         else:
             freq_bands = torch.linspace(2.**0., 2.**max_freq, steps=N_freqs)
-            
+
         for freq in freq_bands:
             for p_fn in self.kwargs['periodic_fns']:
                 embed_fns.append(lambda x, p_fn=p_fn, freq=freq : p_fn(x * freq))
                 out_dim += d
-                    
+
         self.embed_fns = embed_fns
         self.out_dim = out_dim
-        
+
     def embed(self, inputs):
         return torch.cat([fn(inputs) for fn in self.embed_fns], -1)
 
@@ -48,7 +48,7 @@ class Embedder:
 def get_embedder(multires, i=0):
     if i == -1:
         return nn.Identity(), 3
-    
+
     embed_kwargs = {
                 'include_input' : True,
                 'input_dims' : 3,
@@ -57,7 +57,7 @@ def get_embedder(multires, i=0):
                 'log_sampling' : True,
                 'periodic_fns' : [torch.sin, torch.cos],
     }
-    
+
     embedder_obj = Embedder(**embed_kwargs)
     embed = lambda x, eo=embedder_obj : eo.embed(x)
     return embed, embedder_obj.out_dim
@@ -75,17 +75,17 @@ class NeRF(nn.Module):
         self.input_ch_views = input_ch_views
         self.skips = skips
         self.use_viewdirs = use_viewdirs
-        
+
         self.pts_linears = nn.ModuleList(
             [nn.Linear(input_ch, W)] + [nn.Linear(W, W) if i not in self.skips else nn.Linear(W + input_ch, W) for i in range(D-1)])
-        
+
         ### Implementation according to the official code release (https://github.com/bmild/nerf/blob/master/run_nerf_helpers.py#L104-L105)
         self.views_linears = nn.ModuleList([nn.Linear(input_ch_views + W, W//2)])
 
         ### Implementation according to the paper
         # self.views_linears = nn.ModuleList(
         #     [nn.Linear(input_ch_views + W, W//2)] + [nn.Linear(W//2, W//2) for i in range(D//2)])
-        
+
         if use_viewdirs:
             self.feature_linear = nn.Linear(W, W)
             self.alpha_linear = nn.Linear(W, 1)
@@ -106,7 +106,7 @@ class NeRF(nn.Module):
             alpha = self.alpha_linear(h)
             feature = self.feature_linear(h)
             h = torch.cat([feature, input_views], -1)
-        
+
             for i, l in enumerate(self.views_linears):
                 h = self.views_linears[i](h)
                 h = F.relu(h)
@@ -116,17 +116,17 @@ class NeRF(nn.Module):
         else:
             outputs = self.output_linear(h)
 
-        return outputs    
+        return outputs
 
     def load_weights_from_keras(self, weights):
         assert self.use_viewdirs, "Not implemented if use_viewdirs=False"
-        
+
         # Load pts_linears
         for i in range(self.D):
             idx_pts_linears = 2 * i
-            self.pts_linears[i].weight.data = torch.from_numpy(np.transpose(weights[idx_pts_linears]))    
+            self.pts_linears[i].weight.data = torch.from_numpy(np.transpose(weights[idx_pts_linears]))
             self.pts_linears[i].bias.data = torch.from_numpy(np.transpose(weights[idx_pts_linears+1]))
-        
+
         # Load feature_linear
         idx_feature_linear = 2 * self.D
         self.feature_linear.weight.data = torch.from_numpy(np.transpose(weights[idx_feature_linear]))
@@ -151,7 +151,7 @@ class NeRF(nn.Module):
 
 # Ray helpers
 def get_rays(H, W, K, c2w):
-    i, j = torch.meshgrid(torch.linspace(0, W-1, W), torch.linspace(0, H-1, H))  # pytorch's meshgrid has indexing='ij'
+    i, j = torch.meshgrid(torch.linspace(0, W-1, W), torch.linspace(0, H-1, H), indexing='ij')  # pytorch's meshgrid has indexing='ij'
     i = i.t()
     j = j.t()
     dirs = torch.stack([(i-K[0][2])/K[0][0], -(j-K[1][2])/K[1][1], -torch.ones_like(i)], -1)
@@ -176,7 +176,7 @@ def ndc_rays(H, W, focal, near, rays_o, rays_d):
     # Shift ray origins to near plane
     t = -(near + rays_o[...,2]) / rays_d[...,2]
     rays_o = rays_o + t[...,None] * rays_d
-    
+
     # Projection
     o0 = -1./(W/(2.*focal)) * rays_o[...,0] / rays_o[...,2]
     o1 = -1./(H/(2.*focal)) * rays_o[...,1] / rays_o[...,2]
@@ -185,10 +185,10 @@ def ndc_rays(H, W, focal, near, rays_o, rays_d):
     d0 = -1./(W/(2.*focal)) * (rays_d[...,0]/rays_d[...,2] - rays_o[...,0]/rays_o[...,2])
     d1 = -1./(H/(2.*focal)) * (rays_d[...,1]/rays_d[...,2] - rays_o[...,1]/rays_o[...,2])
     d2 = -2. * near / rays_o[...,2]
-    
+
     rays_o = torch.stack([o0,o1,o2], -1)
     rays_d = torch.stack([d0,d1,d2], -1)
-    
+
     return rays_o, rays_d
 
 
