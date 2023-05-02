@@ -379,15 +379,21 @@ def post_sam(args, ):
     in_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name)
     in_imgs_dir = os.path.join(in_dir, f'images_{opt["down_factor"]}')
 
-    # Read COLMAP cam params
     in_cam_dir = os.path.join(in_dir, 'sparse/0')
 
     # Copy cam params to sam folder
-    out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name, 'sparse/0')
+    out_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name)
+    os.makedirs(out_dir, exist_ok=True)
+
+    shutil.copy(os.path.join(in_dir, 'poses_bounds.npy'), os.path.join(out_dir, 'poses_bounds.npy'))
+
+    out_cam_dir = os.path.join(out_dir, 'sparse/0')
     os.makedirs(out_cam_dir, exist_ok=True)
+
     for file in os.listdir(in_cam_dir):
         shutil.copy(os.path.join(in_cam_dir, file), os.path.join(out_cam_dir, file))
 
+    # Read COLMAP cam params
     cameras, images, points3D = read_model(path=out_cam_dir, ext='.bin')
 
     img_names = [images[k].name for k in images]
@@ -396,8 +402,8 @@ def post_sam(args, ):
     # img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if path.endswith(img_file_type)]
     img_paths = [os.path.join(in_imgs_dir, f) for f in img_names]
 
-    out_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name)
     out_dirs = {
+        'imgs_dir': os.path.join(out_dir, 'images'),
         'masks_dir': os.path.join(out_dir, 'masks'),
         'imgs_ori_dir': os.path.join(out_dir, f'images_{opt["down_factor"]}_ori'),
         'imgs_points_dir': os.path.join(out_dir, 'imgs_with_points'),
@@ -409,6 +415,7 @@ def post_sam(args, ):
 
     # Copy ori imgs from dense folder to prepare_data folder
     copy_imgs(in_imgs_dir, out_dirs['imgs_ori_dir'], img_file_type=img_file_type)
+    copy_imgs(os.path.join(in_dir, 'images'), out_dirs['imgs_dir'], img_file_type=img_file_type)
 
     # Register SAM model
     predictor = load_sam(model_type, ckpt_path, device_type)

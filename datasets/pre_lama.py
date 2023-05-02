@@ -1,4 +1,3 @@
-import argparse
 import json
 import os
 import shutil
@@ -9,6 +8,7 @@ import numpy as np
 from tqdm import tqdm
 
 from mask_refine import mask_refine
+from pre_sam import parse
 from utils.colmap.read_write_model import read_images_binary
 
 
@@ -16,7 +16,7 @@ def pre_lama(args):
     in_dir, out_dir = args.in_dir, args.out_dir
     dataset_name, scene_name = args.dataset_name, args.scene_name
     json_path = args.json_path
-    img_file_type = args.img_file_type
+    # img_file_type = args.img_file_type
 
     in_dir = os.path.join(in_dir, f'{dataset_name}_sam', scene_name)
     out_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name)
@@ -73,22 +73,6 @@ def pre_lama(args):
             cv2.imwrite(out_img_masked_path, rgb_masked)
 
             t_bar.update(1)
-
-
-def parse():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--in_dir', type=str)
-    parser.add_argument('--out_dir', type=str)
-    parser.add_argument('--dataset_name', type=str)
-    parser.add_argument('--scene_name', type=str)
-
-    parser.add_argument('--json_path', type=str)
-
-    args = parser.parse_args()
-
-    args.img_file_type = ('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff')
-
-    return args
 
 
 def main():

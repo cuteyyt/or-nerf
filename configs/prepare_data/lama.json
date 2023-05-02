@@ -1,4 +1,73 @@
 {
+  "ibrnet_data": {
+    "qq3": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
+      }
+    },
+    "qq6": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
+      }
+    },
+    "qq10": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "contour_scale_size": 2
+      }
+    },
+    "qq11": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5
+      }
+    },
+    "qq13": {
+      "down_factor": 1,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
+      }
+    },
+    "qq16": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
+        "early_dilate": true,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3
+      }
+    },
+    "qq17": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 2,
+        "contour_scale_size": 3
+      }
+    },
+    "qq21": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 3,
+        "dilate_iters": 3,
+        "contour_scale_size": 3
+      }
+    }
+  },
   "nerf_llff_data": {
     "room": {
       "down_factor": 4,
@@ -110,124 +179,6 @@
         "dilate_kernel_size": 7,
         "dilate_iters": 7,
         "contour_scale_size": 10
-      }
-    }
-  },
-  "ibrnet_data": {
-    "qq3": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 3,
-        "dilate_iters": 3,
-        "contour_scale_size": 3
-      }
-    },
-    "qq6": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 3,
-        "dilate_iters": 3,
-        "contour_scale_size": 3
-      }
-    },
-    "qq10": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "contour_scale_size": 2
-      }
-    },
-    "qq11": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5
-      }
-    },
-    "qq13": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 3,
-        "dilate_iters": 3,
-        "contour_scale_size": 3
-      }
-    },
-    "qq16": {
-      "down_factor": 4,
-      "refine_params": {
-        "num_masks": 1,
-        "early_dilate": true,
-        "dilate_kernel_size": 3,
-        "dilate_iters": 3
-      }
-    },
-    "qq17": {
-      "down_factor": 4,
-      "refine_params": {
-        "num_masks": 2,
-        "contour_scale_size": 3
-      }
-    },
-    "qq21": {
-      "down_factor": 4,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 3,
-        "dilate_iters": 3,
-        "contour_scale_size": 3
-      }
-    }
-  },
-  "nerf_real_360": {
-    "vasedeck": {
-      "down_factor": 4,
-      "refine_params": {
-        "num_masks": 1,
-        "early_dilate": true,
-        "dilate_kernel_size": 10,
-        "dilate_iters": 10,
-        "contour_scale_size": 5
-      }
-    }
-  },
-  "nerf_synthetic_colmap": {
-    "ficus": {
-      "down_factor": 1,
-      "refine_params": {
-        "early_dilate": true,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5
-      }
-    },
-    "hotdog": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5,
-        "contour_scale_size": 3
-      }
-    },
-    "materials": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5,
-        "contour_scale_size": 3
-      }
-    },
-    "ship": {
-      "down_factor": 1,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 5,
-        "dilate_iters": 5,
-        "contour_scale_size": 3
       }
     }
   }

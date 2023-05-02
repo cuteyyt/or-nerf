@@ -1,9 +1,23 @@
+# Specify path
+DATASET_PATH=data/ibrnet_data/qq11
+
 # Sparse Reconstruction
+colmap feature_extractor \
+  --database_path $DATASET_PATH/database.db \
+  --image_path $DATASET_PATH/images \
+  --ImageReader.single_camera '1'
+
+colmap exhaustive_matcher \
+  --database_path $DATASET_PATH/database.db
+
+mkdir $DATASET_PATH/sparse
+
+colmap mapper \
+  --database_path $DATASET_PATH/database.db \
+  --image_path $DATASET_PATH/images \
+  --output_path $DATASET_PATH/sparse
 
 # Dense Reconstruction
-
-# Specify path
-DATASET_PATH=data/nerf_synthetic_colmap/ficus
 
 # Colmap dense reconstruction in one-line
 colmap automatic_reconstructor --image_path $DATASET_PATH/images --workspace_path $DATASET_PATH
@@ -14,7 +28,7 @@ colmap automatic_reconstructor --image_path $DATASET_PATH/images --workspace_pat
 # The same as LLFF https://github.com/Fyusion/LLFF
 colmap feature_extractor \
   --database_path $DATASET_PATH/database.db \
-  --image_path $DATASET_PATH/images_1 \
+  --image_path $DATASET_PATH/images \
   --ImageReader.single_camera '1'
 
 colmap exhaustive_matcher \
@@ -24,7 +38,7 @@ mkdir $DATASET_PATH/sparse
 
 colmap mapper \
   --database_path $DATASET_PATH/database.db \
-  --image_path $DATASET_PATH/images_1 \
+  --image_path $DATASET_PATH/images \
   --output_path $DATASET_PATH/sparse
 
 mkdir $DATASET_PATH/dense/0

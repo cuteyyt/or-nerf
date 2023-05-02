@@ -39,14 +39,13 @@ def main():
     os.makedirs(out_imgs_dir, exist_ok=True)
 
     for i, img_path in enumerate(img_paths):
+        img_path = str(img_path)
         out_path = os.path.join(out_imgs_dir, Path(img_names[i]).name)
+
         shutil.copy(img_path, out_path)
 
-    # The sam folder
+    # Warp a video
     out_video_path = os.path.join(in_dir, f'{dataset_name}_sam', scene_name, 'lama.mp4')
-    # num_imgs = len([os.path.join(in_img_dir, path) for path in os.listdir(in_img_dir)
-    #                 if path.lower().endswith(img_file_type)])
-    # fps = num_imgs // 3
     imgs2video(imgs_dir, out_video_path, img_file_type, fps=10)
 
 
