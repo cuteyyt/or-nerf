@@ -1,0 +1,314 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+logs
+data/
+wandb
+scripts
+web
+*.pyc
+.vscode
+
+logs/*
+test_renders/*
+.idea/*
+.ipynb_checkpoints/*
+__pycache__/*
+
+
+lama/LaMa_test_images
+lama/outputs
+lama/output
+!lama/saicinpainting/training/data/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Byte-compiled / optimized / DLL files
+lama/__pycache__/
+lama/*.py[cod]
+lama/*$py.class
+
+# C extensions
+lama/*.so
+
+# Distribution / packaging
+lama/.Python
+lama/build/
+lama/develop-eggs/
+lama/dist/
+lama/downloads/
+lama/eggs/
+lama/.eggs/
+lama/lib/
+lama/lib64/
+lama/parts/
+lama/sdist/
+lama/var/
+lama/wheels/
+lama/pip-wheel-metadata/
+lama/share/python-wheels/
+lama/*.egg-info/
+lama/.installed.cfg
+lama/*.egg
+lama/MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+lama/*.manifest
+lama/*.spec
+
+# Installer logs
+lama/pip-log.txt
+lama/pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+lama/htmlcov/
+lama/.tox/
+lama/.nox/
+lama/.coverage
+lama/.coverage.*
+lama/.cache
+lama/nosetests.xml
+lama/coverage.xml
+lama/*.cover
+lama/*.py,cover
+lama/.hypothesis/
+lama/.pytest_cache/
+
+# Translations
+lama/*.mo
+lama/*.pot
+
+# Django stuff:
+lama/*.log
+lama/local_settings.py
+lama/db.sqlite3
+lama/db.sqlite3-journal
+
+# Flask stuff:
+lama/instance/
+lama/.webassets-cache
+
+# Scrapy stuff:
+lama/.scrapy
+
+# Sphinx documentation
+lama/docs/_build/
+
+# PyBuilder
+lama/target/
+
+# Jupyter Notebook
+lama/.ipynb_checkpoints
+
+# IPython
+lama/profile_default/
+lama/ipython_config.py
+
+# pyenv
+lama/.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+lama/__pypackages__/
+
+# Celery stuff
+lama/celerybeat-schedule
+lama/celerybeat.pid
+
+# SageMath parsed files
+lama/*.sage.py
+
+# Environments
+lama/.env
+lama/.venv
+lama/env/
+lama/venv/
+lama/ENV/
+lama/env.bak/
+lama/venv.bak/
+
+# Spyder project settings
+lama/.spyderproject
+lama/.spyproject
+
+# Rope project settings
+lama/.ropeproject
+
+# mkdocs documentation
+lama/site
+
+# mypy
+lama/.mypy_cache/
+lama/.dmypy.json
+lama/dmypy.json
+
+# Pyre type checker
+lama/.pyre/
+
+# temporary files
+## IDEA
+lama/.idea/
+## vscode
+lama/.vscode/
+## vim
+lama/*.sw?
+
+lama/*.zip
+lama/big-lama
+lama/hub/*
