@@ -1,0 +1,17 @@
+dataset = ibrnet_data
+scene = qq21
+
+expname = qq21
+basedir = ./logs/nerf/ori
+datadir = ./data/ibrnet_data_sparse/qq21
+
+factor = 4
+llffhold = 8
+
+N_rand = 1024
+N_samples = 64
+N_importance = 64
+
+use_viewdirs = True
+raw_noise_std = 1e0
+

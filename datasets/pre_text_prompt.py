@@ -13,6 +13,7 @@ from tqdm import tqdm
 from PIL import Image, ImageDraw, ImageFont
 
 # Grounding DINO
+sys.path.append(os.path.join(os.getcwd(), "prior/Grounded-Segment-Anything"))
 import GroundingDINO.groundingdino.datasets.transforms as T
 from GroundingDINO.groundingdino.models import build_model
 from GroundingDINO.groundingdino.util import box_ops
@@ -24,10 +25,7 @@ from segment_anything import build_sam, SamPredictor
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
-sys.path.append(os.getcwd())
 from utils.colmap.read_write_model import read_model
-from utils.file import copy_files
 
 def save_masks(masks, out_path):
     masks_img = (masks * 255).astype(np.uint8)
@@ -158,13 +156,11 @@ if __name__ == "__main__":
         "--sam_checkpoint", type=str, required=True, help="path to checkpoint file"
     )
     parser.add_argument("--input_image", type=str, help="path to image file")
-    #parser.add_argument("--input_dir", type=str, required=True, help="path to image dir")
     parser.add_argument("--text_prompt", type=str, help="text prompt")
-    #parser.add_argument("--output_dir", "-o", type=str, default="outputs", required=True, help="output directory")
     parser.add_argument("--dataset", type=str, required=True, help="dataset name")
     parser.add_argument("--scene", type=str, required=True, help="scene name")
-    parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
-    parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
+    #parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
+    #parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
     parser.add_argument("--text_prompt_json", type=str, help="path to text prompt json")
 
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
@@ -180,8 +176,8 @@ if __name__ == "__main__":
     #output_dir = args.output_dir
     dataset = args.dataset
     scene = args.scene
-    box_threshold = args.box_threshold
-    text_threshold = args.text_threshold
+    #box_threshold = args.box_threshold
+    #text_threshold = args.text_threshold
     text_prompt_json_path = args.text_prompt_json
     device = args.device
 
@@ -193,7 +189,11 @@ if __name__ == "__main__":
     # open json
     with open(args.text_prompt_json, 'r') as file:
         text_params = json.load(file)
-        text_prompt_list = text_params[dataset][scene]
+        text_prompt_list = text_params[dataset][scene]["text"]
+        box_threshold = text_params[dataset][scene]["box_threshold"]
+        text_threshold = text_params[dataset][scene]["text_threshold"]
+        factor = text_params[dataset][scene]["factor"]
+
     # load model
     model = load_model(config_file, grounded_checkpoint, device=device)
 
@@ -205,21 +205,21 @@ if __name__ == "__main__":
         for image_id, image in images.items():
             image_filestem = Path(image.name)
             print(image_filestem)
-            image_path = os.path.join(input_dir, 'images_4', image_filestem)
+            # if str(image_filestem) != "20220811_113229.jpg":
+            #     t_bar.update(1)
+            #     continue
+            image_path = os.path.join(input_dir, 'images_{}'.format(factor), image_filestem)
             if dataset == 'spinnerf_dataset':
                 image_path = image_path[:-3] + 'png'
             if not os.path.exists(image_path):
+                t_bar.update(1)
                 continue
             image = cv2.imread(image_path)
             mask = np.zeros((image.shape[0], image.shape[1])).astype(np.int32)
             for text_prompt in text_prompt_list:
                 # load image
-                print(text_prompt)
+                #print(text_prompt)
                 image_pil, image = load_image(image_path)
-
-
-                # visualize raw image
-                #image_pil.save(os.path.join(output_dir, "raw_image.jpg"))
 
                 # run grounding dino model
                 boxes_filt, pred_phrases = get_grounding_output(
@@ -241,6 +241,7 @@ if __name__ == "__main__":
                 boxes_filt = boxes_filt.cpu()
                 transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
                 print(transformed_boxes)
+                
 
                 if len(transformed_boxes) != 0 :
                     masks, _, _ = predictor.predict_torch(
@@ -249,16 +250,30 @@ if __name__ == "__main__":
                         boxes = transformed_boxes.to(device),
                         multimask_output = False,
                     )
+                    print(masks.shape)
 
                     os.makedirs(os.path.join(output_dir, 'masks'), exist_ok=True)
                     os.makedirs(os.path.join(output_dir, 'imgs_with_masks'), exist_ok=True)
+                    os.makedirs(os.path.join(output_dir, 'imgs_with_boxes'), exist_ok=True)
                     mask_dir = os.path.join(output_dir, 'masks', image_filestem)
                     mask_img_dir = os.path.join(output_dir, 'imgs_with_masks', image_filestem)
+                    box_img_dir = os.path.join(output_dir, 'imgs_with_boxes', image_filestem)
                     masks = masks.cpu().numpy()
 
                     mask += masks[0][0].astype(np.int32) 
                     save_masks(mask.copy(), mask_dir)
                     draw_masks_on_img(image.copy(), mask.copy(), mask_img_dir)
+                    
+                    plt.figure(figsize=(10,10))
+                    plt.imshow(image)
+                    for box, label in zip(boxes_filt, pred_phrases):
+                        print(box, label)
+                        show_box(box.numpy(), plt.gca(), label)
+                        plt.axis('off')
+                        plt.savefig(
+                            box_img_dir, 
+                            bbox_inches="tight", dpi=300, pad_inches=0.0
+                        )
 
             t_bar.update(1)
 

@@ -14,14 +14,13 @@ python datasets/pre_sam.py \
   --json_path configs/prepare_data/sam.json
 
 # SAM predict with text prompt
-python datasets/pre_text_prompt \
+export CUDA_VISIBLE_DEVICES=1
+python datasets/pre_text_prompt.py \
   --config prior/Grounded-Segment-Anything/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py \
   --grounded_checkpoint ckpts/grounded_sam/groundingdino_swint_ogc.pth \
   --sam_checkpoint ckpts/sam/sam_vit_h_4b8939.pth \
   --dataset "${DATASET}" \
   --scene "${SCENE}" \
-  --box_threshold 0.3 \
-  --text_threshold 0.25 \
   --text_prompt_json configs/prepare_data/text_prompt.json \
   --device "cuda"
 

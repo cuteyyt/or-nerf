@@ -1,22 +1,122 @@
 {
+    "nerf_llff_data": {
+        "room": {
+            "text": ["television"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "fortress": {
+            "text": ["fortress"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        }
+    },
+    "llff_real_iconic": {
+        "data5_piano": {
+            "text": ["book"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        }
+    },
     "spinnerf_dataset": {
-        "2": ["box"],
-        "3": ["backpack"],
-        "4": ["box"],
-        "7": ["box"],
-        "10": ["kettle"],
-        "12": ["chair"],
-        "book": ["book"],
-        "trash": ["trash can"]
+        "_comment": "Quite good performance",
+        "2": {
+            "text": ["box"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "3": {
+            "text": ["backpack"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "4": {
+            "text": ["box"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "7": {
+            "text": ["box"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "10": {
+            "text": ["kettle"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "12": {
+            "text": ["chair"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "book": {
+            "text": ["book"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "trash": {
+            "text": ["trash can"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        }
+    },
+    "ibrnet_data": {
+        "_comment": "Not good performance",
+        "qq3": {
+            "text": ["lamp"],
+            "factor": 1,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "qq6": {
+            "text": ["book above printer"],
+            "factor": 1,
+            "box_threshold": 0.25,
+            "text_threshold": 0.25
+        },
+        "qq10": {
+            "text": ["white table"],
+            "factor": 1,
+            "box_threshold": 0.25,
+            "text_threshold": 0.25
+        },
+        "qq11": {
+            "text": ["statue"],
+            "factor": 1,
+            "box_threshold": 0.25,
+            "text_threshold": 0.25
+        },
+        "qq13": {
+            "text": ["pool"],
+            "factor": 1,
+            "box_threshold": 0.25,
+            "text_threshold": 0.25
+        }
     },
     "nerf_real_360": {
-        "pinecone": ["pinecone"],
-        "vasedeck": ["vase", "flower"]
-    },
-    "mip_360_data": {
-        "garden": ["vase", "yellow leaves"]
-    },
-    "synthetic_nerf": {
-        "ship": ["ship"]
+        "pinecone": {
+            "text": ["pinecone"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        },
+        "vasedeck": {
+            "text": ["vase", "flower"],
+            "factor": 4,
+            "box_threshold": 0.3,
+            "text_threshold": 0.25
+        }
     }
 }
