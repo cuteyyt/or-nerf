@@ -203,26 +203,56 @@ def find_3d_space(img_path, img, points, masks, cameras, images, points3D, opt):
     return res
 
 
+def choose_mask(masks, scores, logits, threshold):
+    masks_valid = masks[scores >= threshold]
+    assert len(masks_valid) >= 1
+
+    scores_valid = scores[scores >= threshold]
+    logits_valid = logits[scores >= threshold]
+
+    masks_flat = masks.reshape(masks_valid.shape[0], -1)
+
+    masks_areas = np.sum(masks_flat, axis=1)
+    sort_indices = np.argsort(masks_areas)
+
+    mask = masks_valid[sort_indices][-1][np.newaxis, ...]
+    score = scores_valid[sort_indices][-1]
+    logit = logits_valid[sort_indices][-1][np.newaxis, ...]
+
+    return mask, score, logit
+
+
 def predict_by_sam_single_img(predictor, img, img_points, img_labels, params):
     predictor.set_image(img, image_format='BGR')
 
     masks, scores, logits = None, None, None
     if params['has_pred_params']:
         for _ in range(params['pred_params']['pred_iters']):
+            if 'threshold' in params['pred_params']:
+                multimask_output_flag = True
+                threshold = params['pred_params']['threshold']
+            else:
+                multimask_output_flag = False
+                threshold = None
+
             if logits is None:
                 masks, scores, logits = predictor.predict(
                     point_coords=img_points,
                     point_labels=img_labels,
-                    multimask_output=False,
+                    multimask_output=multimask_output_flag,
                     mask_input=None
                 )
+                if multimask_output_flag:
+                    masks, scores, logits = choose_mask(masks, scores, logits, threshold)
             else:
                 masks, scores, logits = predictor.predict(
                     point_coords=img_points,
                     point_labels=img_labels,
-                    multimask_output=False,
+                    multimask_output=multimask_output_flag,
                     mask_input=logits
                 )
+                if multimask_output_flag:
+                    masks, scores, logits = choose_mask(masks, scores, logits, threshold)
 
     else:
         masks, scores, logits = predictor.predict(

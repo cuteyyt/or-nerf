@@ -533,6 +533,11 @@ def config_parser():
     parser.add_argument("--i_video", type=int, default=200000,
                         help='frequency of render_poses video saving')
 
+    parser.add_argument("--render_all", action="store_true",
+                        help="Enable to render all views")
+    parser.add_argument("--mode", choices=['ori_img', 'delete_img', 'all_depth', 'mask_depth', 'dynamic_depth'],
+                        default='delete_img')
+
     return parser
 
 
@@ -540,11 +545,19 @@ def train():
     parser = config_parser()
     args = parser.parse_args()
 
+    mode = args.mode
+    read_depth = True if 'depth' in mode else False
+
     # Load data
     K = None
-    images, poses, bds, render_poses, i_test = load_llff_data(args.datadir, args.factor,
-                                                              recenter=True, bd_factor=.75,
-                                                              spherify=args.spherify)
+    res = load_llff_data(args.datadir, args.factor,
+                         recenter=True, bd_factor=.75,
+                         spherify=args.spherify, read_depth=read_depth)
+    if len(res) == 5:
+        images, poses, bds, render_poses, i_test = res
+    else:
+        images, depths, poses, bds, render_poses, i_test = res
+
     hwf = poses[0, :3, -1]
     poses = poses[:, :3, :4]
     print('Loaded llff', images.shape, render_poses.shape, hwf, args.datadir)
@@ -636,6 +649,21 @@ def train():
 
             return
 
+    if args.render_all:
+        print('RENDER ALL VIEWS')
+        with torch.no_grad():
+            savedir = os.path.join(
+                basedir, expname, 'render_all_{}_depth'.format('test' if args.render_test else 'path', start))
+            os.makedirs(savedir, exist_ok=True)
+            os.makedirs(f'{savedir}_depth', exist_ok=True)
+            print('poses shape', render_poses.shape)
+
+            render_path(render_poses, hwf, K, args.chunk, render_kwargs_test, gt_imgs=images, savedir=savedir,
+                        render_factor=args.render_factor)
+            print('Done rendering', savedir)
+
+            return
+
     # Prepare raybatch tensor if batching random rays
     N_rand = args.N_rand
     use_batching = not args.no_batching
@@ -649,6 +677,12 @@ def train():
         rays_rgb = np.stack([rays_rgb[i] for i in i_train], 0)  # train images only
         rays_rgb = np.reshape(rays_rgb, [-1, 3, 3])  # [(N-1)*H*W, ro+rd+rgb, 3]
         rays_rgb = rays_rgb.astype(np.float32)
+
+        if read_depth:
+            rays_depth = np.concatenate([rays, depths[: None], 1])
+            rays_depth = np.transpose(rays)
+            target_depth = None
+
         print('shuffle rays')
         np.random.shuffle(rays_rgb)
 
@@ -736,10 +770,18 @@ def train():
             loss = img_loss
             psnr = mse2psnr(img_loss)
 
+            if read_depth:
+                depth_loss_fine = img2mse(depth, target_depth)
+                loss += depth_loss_fine
+
             if 'rgb0' in extras:
                 img_loss0 = img2mse(extras['rgb0'], target_s)
                 loss = loss + img_loss0
                 psnr0 = mse2psnr(img_loss0)
+
+                if read_depth:
+                    depth_loss_coarse = img2mse(extras['depth0'], target_depth)
+                    loss = loss + depth_loss_coarse
 
             loss.backward()
             optimizer.step()

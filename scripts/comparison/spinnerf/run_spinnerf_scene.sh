@@ -6,14 +6,14 @@ FACTOR=$4
 set -e
 
 # Generate ori depth
-cd comparison/SPIN-NeRF
+cd comparison/SPIn-NeRF
 
 rm -rf lama/LaMa_test_images
 rm -rf lama/output
 rm -rf lama/outputs
 
-python DS_NeRF/run_nerf.py \
-  --config ../../configs/comparison/spinnerf/delete/qq3.txt \
+CUDA_VISIBLE_DEVICES=1 python DS_NeRF/run_nerf.py \
+  --config ../../configs/comparison/spinnerf/delete/"$SCENE".txt \
   --prepare \
   --i_weight 1000000000 \
   --i_video 1000000000 \
@@ -64,10 +64,9 @@ cd ..
 
 # Training with spinnerf backbone
 python DS_NeRF/run_nerf.py \
-  --config ../../configs/comparison/spinnerf/delete/qq3.txt \
+  --config ../../configs/comparison/spinnerf/delete/"$SCENE".txt \
   --i_feat 200 \
   --lpips \
-  --i_weight 1000000000000 \
   --i_video 10000 \
   --N_iters 10001 \
   --N_gt 0 \

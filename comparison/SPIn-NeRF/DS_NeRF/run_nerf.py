@@ -1610,7 +1610,7 @@ def train():
         ################################
 
         # Rest is logging
-        if i % args.i_weights == 0:
+        if i % args.i_weights == 0 and i > 0:
             path = os.path.join(basedir, expname, '{:06d}.tar'.format(i))
             torch.save({
                 'global_step': global_step,
@@ -1687,7 +1687,7 @@ def train():
             tqdm.write(
                 f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
 
-        if i == args.N_iters:
+        if not args.prepare and args.i_video > 0 and i % args.i_video == 0 and i > 0:
             random_poses = poses
 
             with torch.no_grad():
@@ -1699,15 +1699,20 @@ def train():
                                              need_alpha=False
                                              )
 
-            out_rgb_dirs = f'{basedir}/{expname}/render_all/rgb'
-            out_disp_dirs = f'{basedir}/{expname}/render_all/disp'
+            out_rgb_dirs = f'{basedir}/{expname}/render_all'
+            # out_disp_dirs = f'{basedir}/{expname}/render_all/disp'
 
             os.makedirs(out_rgb_dirs, exist_ok=True)
-            os.makedirs(out_disp_dirs, exist_ok=True)
+            # os.makedirs(out_disp_dirs, exist_ok=True)
 
             for _ in range(len(poses)):
-                cv2.imwrite(f'{out_rgb_dirs}/img{_:0>3}.png', rgbs[_].detach().cpu().numpy() * 255)
-                cv2.imwrite(f'{out_disp_dirs}/img{_:0>3}.png', disps[_].detach().cpu().numpy() * 255)
+                # disp = disps[_].detach().cpu().numpy()
+                # disp = disp / np.nanmax(disp)
+                img = (np.asarray(rgbs[_]) * 255).astype(np.uint8)
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+                cv2.imwrite(f'{out_rgb_dirs}/img{_:0>3}.png', img)
+                # cv2.imwrite(f'{out_disp_dirs}/img{_:0>3}.png', (disp * 255).astype(np.uint8))
 
         global_step += 1
 

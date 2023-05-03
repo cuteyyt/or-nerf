@@ -68,11 +68,23 @@
       }
     }
   },
+  "llff_real_iconic": {
+    "data5_piano": {
+      "down_factor": 4,
+      "refine_params": {
+        "num_masks": 1,
+        "dilate_kernel_size": 5,
+        "dilate_iters": 5,
+        "contour_scale_size": 3
+      }
+    }
+  },
   "nerf_llff_data": {
     "room": {
       "down_factor": 4,
       "refine_params": {
         "num_masks": 1,
+        "early_dilate": true,
         "dilate_kernel_size": 5,
         "dilate_iters": 5,
         "contour_scale_size": 10
@@ -92,17 +104,6 @@
         "num_masks": 1,
         "dilate_kernel_size": 5,
         "dilate_iters": 5,
-        "contour_scale_size": 5
-      }
-    }
-  },
-  "llff_real_iconic": {
-    "data5_piano": {
-      "down_factor": 4,
-      "refine_params": {
-        "num_masks": 1,
-        "dilate_kernel_size": 7,
-        "dilate_iters": 7,
         "contour_scale_size": 5
       }
     }
@@ -157,9 +158,9 @@
       "down_factor": 4,
       "refine_params": {
         "num_masks": 1,
+        "early_dilate": true,
         "dilate_kernel_size": 7,
         "dilate_iters": 7,
-        "early_dilate": true,
         "contour_scale_size": 3
       }
     },
@@ -178,7 +179,7 @@
         "num_masks": 1,
         "dilate_kernel_size": 7,
         "dilate_iters": 7,
-        "contour_scale_size": 10
+        "contour_scale_size": 7
       }
     }
   }

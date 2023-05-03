@@ -25,20 +25,12 @@
       "down_factor": 1,
       "points": [
         [
-          721,
-          164
+          706,
+          155
         ],
         [
-          772,
-          186
-        ],
-        [
-          718,
-          240
-        ],
-        [
-          772,
-          245
+          740,
+          204
         ]
       ],
       "num_points": 1,
@@ -143,20 +135,16 @@
       "down_factor": 4,
       "points": [
         [
-          660,
-          419
+          606,
+          413
         ],
         [
-          641,
-          400
+          663,
+          421
         ],
         [
-          695,
-          448
-        ],
-        [
-          613,
-          405
+          704,
+          441
         ]
       ],
       "num_points": 1,
@@ -182,7 +170,10 @@
           263
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     }
   },
   "nerf_llff_data": {
@@ -198,15 +189,14 @@
           386
         ],
         [
-          419,
-          343
-        ],
-        [
           574,
           416
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "horns": {
       "down_factor": 4,
@@ -264,29 +254,31 @@
           "num_masks": 2
         }
       },
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "fortress": {
       "down_factor": 4,
       "points": [
         [
-          708,
-          502
+          738,
+          254
         ],
         [
           774,
-          364
+          389
         ],
         [
-          833,
-          632
-        ],
-        [
-          752,
-          225
+          758,
+          651
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     }
   },
   "spinnerf_dataset": {
@@ -306,7 +298,10 @@
           410
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "3": {
       "down_factor": 4,
@@ -324,7 +319,10 @@
           233
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "4": {
       "down_factor": 4,
@@ -342,7 +340,10 @@
           478
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "7": {
       "down_factor": 4,
@@ -360,7 +361,10 @@
           71
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "10": {
       "down_factor": 4,
@@ -378,38 +382,37 @@
           227
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "12": {
       "down_factor": 4,
       "points": [
         [
-          524,
-          219
+          483,
+          252
         ],
         [
-          603,
-          202
+          570,
+          304
         ],
         [
-          536,
-          335
-        ],
-        [
-          632,
-          322
+          670,
+          251
         ],
         [
           586,
-          416
+          415
         ],
         [
           510,
-          416
+          420
         ],
         [
           644,
-          416
+          412
         ]
       ],
       "num_points": 1,
@@ -433,31 +436,31 @@
           306
         ]
       ],
-      "num_points": 1
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     },
     "trash": {
       "down_factor": 4,
       "points": [
         [
-          627,
-          512
+          612,
+          385
         ],
         [
-          624,
-          396
+          613,
+          549
         ],
         [
-          617,
-          469
-        ],
-        [
-          655,
-          540
+          578,
+          442
         ]
       ],
       "num_points": 1,
       "pred_params": {
-        "pred_iters": 5
+        "pred_iters": 5,
+        "threshold": 0.85
       }
     }
   }

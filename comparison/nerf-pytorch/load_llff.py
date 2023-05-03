@@ -1,6 +1,7 @@
-import imageio
 import os
 
+import cv2
+import imageio
 import numpy as np
 
 
@@ -58,7 +59,7 @@ def _minify(basedir, factors=[], resolutions=[]):
         print('Done')
 
 
-def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
+def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True, read_depth=False):
     poses_arr = np.load(os.path.join(basedir, 'poses_bounds.npy'))
     poses = poses_arr[:, :-2].reshape([-1, 3, 5]).transpose([1, 2, 0])
     bds = poses_arr[:, -2:].transpose([1, 0])
@@ -112,6 +113,23 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
 
     imgs = imgs = [imread(f)[..., :3] / 255. for f in imgfiles]
     imgs = np.stack(imgs, -1)
+
+    if read_depth:
+        depth_dir = os.path.join(basedir, 'images' + sfx, 'depth')
+        if not os.path.isdir(depth_dir):
+            print('Depth dir {} does not exist !!!!'.format(depth_dir))
+            return
+
+        depth_files = [os.path.join(depth_dir, f) for f in sorted(os.listdir(depth_dir))]
+        if poses.shape[-1] != len(depth_files):
+            print('Mismatch between depths {} and poses {} !!!!'.format(len(depth_files), poses.shape[-1]))
+            return
+
+        depths = [cv2.imread(depth_file) / 255. for depth_file in depth_files]
+        depths = np.stack(depths, -1)
+
+        print('Loaded image data', imgs.shape, poses[:, -1, 0], depths.shape)
+        return poses, bds, imgs, depths
 
     print('Loaded image data', imgs.shape, poses[:, -1, 0])
     return poses, bds, imgs
@@ -233,8 +251,12 @@ def spherify_poses(poses, bds):
     return poses_reset, new_poses, bds
 
 
-def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=False, path_zflat=False):
-    poses, bds, imgs = _load_data(basedir, factor=factor)  # factor=8 downsamples original imgs by 8x
+def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=False, path_zflat=False, read_depth=False):
+    # factor=8 downsamples original imgs by 8x
+    if read_depth:
+        poses, bds, imgs, depths = _load_data(basedir, factor=factor, read_depth=read_depth)
+    else:
+        poses, bds, imgs = _load_data(basedir, factor=factor, read_depth=read_depth)
     print('Loaded', basedir, bds.min(), bds.max())
 
     # Correct rotation matrix ordering and move variable dim to axis 0
@@ -243,6 +265,9 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
     imgs = np.moveaxis(imgs, -1, 0).astype(np.float32)
     images = imgs
     bds = np.moveaxis(bds, -1, 0).astype(np.float32)
+
+    if read_depth:
+        depths = np.moveaxis(depths, -1, 0).astype(np.float32)
 
     # Rescale if bd_factor is provided
     sc = 1. if bd_factor is None else 1. / (bds.min() * bd_factor)
@@ -303,4 +328,7 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
     images = images.astype(np.float32)
     poses = poses.astype(np.float32)
 
-    return images, poses, bds, render_poses, i_test
+    if read_depth:
+        return images, depths, poses, bds, render_poses, i_test
+    else:
+        return images, poses, bds, render_poses, i_test
