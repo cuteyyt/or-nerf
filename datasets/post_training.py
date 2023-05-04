@@ -1,3 +1,7 @@
+"""
+Calculate metrics for net training results
+"""
+
 import argparse
 import os
 

@@ -1,11 +1,17 @@
+"""
+Post process after lama, including restore filenames, extract a single mask folder, warp inpainting results to video
+"""
+
 import json
 import os
 import shutil
 from pathlib import Path
 
+import cv2
 import numpy as np
+from tqdm import tqdm
 
-from pre_sam import parse
+from pre_nerf import parse
 from utils.colmap.read_write_model import read_images_binary
 from utils.img import imgs2video
 
@@ -38,11 +44,33 @@ def main():
     out_imgs_dir = os.path.join(in_dir, f'{dataset_name}_sam', scene_name, f'images_{down_factor}')
     os.makedirs(out_imgs_dir, exist_ok=True)
 
-    for i, img_path in enumerate(img_paths):
+    print(f'Restore filenames from {imgs_dir} to {out_imgs_dir}')
+
+    i = 0
+    for img_path in tqdm(img_paths):
         img_path = str(img_path)
         out_path = os.path.join(out_imgs_dir, Path(img_names[i]).name)
 
         shutil.copy(img_path, out_path)
+        i += 1
+
+    # Extract a single mask folder from 'lama' folder
+    in_mask_dir = os.path.join(in_dir, f'{dataset_name}_sam', scene_name, 'lama')
+    in_mask_paths = [os.path.join(in_mask_dir, f) for f in os.listdir(in_mask_dir) if 'mask' in f]  # noqa
+    in_mask_paths = sorted(in_mask_paths, key=lambda x: int(Path(x).name.split('_')[0][len('image'):]))
+
+    out_mask_dir = os.path.join(in_dir, f'{dataset_name}_sam', scene_name, f'images_{down_factor}', 'masks')
+    os.makedirs(out_mask_dir, exist_ok=True)
+
+    print(f'Extract a single mask folder from {in_mask_dir} to {out_mask_dir}')
+    for in_mask_path in tqdm(in_mask_paths):
+        out_mask_path = os.path.join(
+            out_mask_dir, 'img{:0>3d}.png'.format(int(Path(in_mask_path).name.split('_')[0][len('image'):])))  # noqa
+
+        mask = cv2.imread(in_mask_path)
+        mask = mask[:, :, 0]
+
+        cv2.imwrite(out_mask_path, mask)
 
     # Warp a video
     out_video_path = os.path.join(in_dir, f'{dataset_name}_sam', scene_name, 'lama.mp4')

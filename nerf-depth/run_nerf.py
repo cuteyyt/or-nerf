@@ -536,6 +536,11 @@ def config_parser():
 
     parser.add_argument("--render_all", action="store_true",
                         help='render all views\' rgb and depth results')
+    parser.add_argument("--mode", choices=['depth_all', 'depth_partial', 'depth_dynamic'], default='depth_all',
+                        help='training mode, '
+                             'depth_all: all depth used as supervision'
+                             'depth_partial: only masked area depth used as supervision'
+                             'depth_dynamic: learn a dynamic loss weight for the mask region')
 
     return parser
 
@@ -543,15 +548,21 @@ def config_parser():
 def train():
     parser = config_parser()
     args = parser.parse_args()
+    assert args.mode in ['depth_all', 'depth_partial', 'depth_dynamic'], f'Unimplemented mode {args.mode}'
+    args.basedir = os.path.join(args.basedir, args.mode)
 
     # Load data
     K = None
-    images, poses, bds, render_poses, i_test = load_llff_data(args.datadir, args.factor,
-                                                              recenter=True, bd_factor=.75,
-                                                              spherify=args.spherify)
+    images, depths_, masks, poses, bds, render_poses, i_test = load_llff_data(args.datadir, args.factor,
+                                                                              recenter=True, bd_factor=.75,
+                                                                              spherify=args.spherify)
     hwf = poses[0, :3, -1]
     poses = poses[:, :3, :4]
-    print('Loaded llff', images.shape, render_poses.shape, hwf, args.datadir)
+    print('Loaded llff:')
+    print(images.shape, depths_.shape, masks.shape, render_poses.shape, )
+    print(hwf)
+    print(args.datadir)
+
     if not isinstance(i_test, list):
         i_test = [i_test]
 
@@ -640,7 +651,6 @@ def train():
 
             return
 
-    # Short circuit for render all views' rgb and depth
     if args.render_all:
         print('RENDER ALL')
         with torch.no_grad():
@@ -678,10 +688,12 @@ def train():
         print('get rays')
         rays = np.stack([get_rays_np(H, W, K, p) for p in poses[:, :3, :4]], 0)  # [N, ro+rd, H, W, 3]
         print('done, concats')
-        rays_rgb = np.concatenate([rays, images[:, None]], 1)  # [N, ro+rd+rgb, H, W, 3]
+        depths_ = np.concatenate([depths_, depths_, depths_], -1)
+        masks = np.concatenate([masks, masks, masks], -1)
+        rays_rgb = np.concatenate([rays, images[:, None], depths_[:, None], masks[:, None]], 1)  # [N, _, H, W, 3]
         rays_rgb = np.transpose(rays_rgb, [0, 2, 3, 1, 4])  # [N, H, W, ro+rd+rgb, 3]
         rays_rgb = np.stack([rays_rgb[i] for i in i_train], 0)  # train images only
-        rays_rgb = np.reshape(rays_rgb, [-1, 3, 3])  # [(N-1)*H*W, ro+rd+rgb, 3]
+        rays_rgb = np.reshape(rays_rgb, [-1, 5, 3])  # [(N-1)*H*W, ro+rd+rgb, 3]
         rays_rgb = rays_rgb.astype(np.float32)
         print('shuffle rays')
         np.random.shuffle(rays_rgb)
@@ -692,6 +704,8 @@ def train():
     # Move training data to GPU
     if use_batching:
         images = torch.Tensor(images).to(device)
+        depths_ = torch.Tensor(depths_).to(device)
+        masks = torch.Tensor(masks).to(device)
     poses = torch.Tensor(poses).to(device)
     if use_batching:
         rays_rgb = torch.Tensor(rays_rgb).to(device)
@@ -716,7 +730,7 @@ def train():
                 # Random over all images
                 batch = rays_rgb[i_batch:i_batch + N_rand]  # [B, 2+1, 3*?]
                 batch = torch.transpose(batch, 0, 1)
-                batch_rays, target_s = batch[:2], batch[2]
+                batch_rays, target_s, t_depth, t_mask = batch[:2], batch[2], batch[3], batch[4]
 
                 i_batch += N_rand
                 if i_batch >= rays_rgb.shape[0]:
@@ -731,6 +745,9 @@ def train():
                 target = images[img_i]
                 target = torch.Tensor(target).to(device)
                 pose = poses[img_i, :3, :4]
+
+                target_depth = depths_[img_i]
+                target_mask = masks[img_i]
 
                 if N_rand is not None:
                     rays_o, rays_d = get_rays(H, W, K, torch.Tensor(pose))  # (H, W, 3), (H, W, 3)
@@ -757,6 +774,8 @@ def train():
                     rays_d = rays_d[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
                     batch_rays = torch.stack([rays_o, rays_d], 0)
                     target_s = target[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
+                    t_depth = target_depth[select_coords[:, 0], select_coords[:, 1]]
+                    t_mask = target_mask[select_coords[:, 0], select_coords[:, 1]]
 
             #####  Core optimization loop  #####
             rgb, disp, acc, depth, extras = render(H, W, K, chunk=args.chunk, rays=batch_rays,
@@ -770,10 +789,39 @@ def train():
             loss = img_loss
             psnr = mse2psnr(img_loss)
 
+            if args.mode == 'depth_all':
+                depth_loss = img2mse(depth, t_depth[:, 0])
+            elif args.mode == 'depth_partial':
+                # Only region in the mask need to be supervised
+                depth_partial = depth[t_mask[:, 0] == 1]
+                if len(depth_partial) > 0:
+                    t_depth_partial = t_depth[:, 0][t_mask[:, 0] == 1]
+                    depth_loss = img2mse(depth_partial, t_depth_partial)
+                else:
+                    depth_loss = 0
+            elif args.mode == 'depth_dynamic':
+                pass
+
+            loss = loss + depth_loss
+
             if 'rgb0' in extras:
                 img_loss0 = img2mse(extras['rgb0'], target_s)
                 loss = loss + img_loss0
                 psnr0 = mse2psnr(img_loss0)
+
+                if args.mode == 'depth_all':
+                    depth_loss0 = img2mse(extras['depth0'], t_depth[:, 0])
+                    loss = loss + depth_loss0
+                elif args.mode == 'depth_partial':
+                    depth0 = extras['depth0']
+                    depth0_partial = depth0[t_mask[:, 0] == 1]
+                    if len(depth0_partial) > 0:
+                        t_depth0_partial = t_depth[:, 0][t_mask[:, 0] == 1]
+                        depth_loss0 = img2mse(depth0_partial, t_depth0_partial)
+                    else:
+                        depth_loss0 = 0
+                elif args.mode == 'depth_dynamic':
+                    pass
 
             loss.backward()
             optimizer.step()
@@ -810,11 +858,13 @@ def train():
 
                 logger.add_scalar('train/loss', loss, global_step)
 
-                logger.add_scalar('train/loss_fine', img_loss_value, global_step)
+                logger.add_scalar('train/loss_img_fine', img_loss_value, global_step)
+                logger.add_scalar('train/loss_depth_fine', depth_loss, global_step)
                 logger.add_scalar('train/psnr_fine', psnr, global_step)
                 # logger.add_histogram('tran', trans)
                 if args.N_importance > 0:
-                    logger.add_scalar('train/loss_coarse', img_loss0, global_step)
+                    logger.add_scalar('train/loss_img_coarse', img_loss0, global_step)
+                    logger.add_scalar('train/loss_depth_coarse', depth_loss0, global_step)
                     logger.add_scalar('train/psnr_coarse', psnr0, global_step)
 
             if i % args.i_img == 0:
@@ -822,6 +872,8 @@ def train():
                 # Log a rendered validation view to Tensorboard
                 img_i = np.random.choice(i_val)
                 target = images[img_i]
+                target_depth = depths_[img_i]
+                target_mask = masks[img_i]
                 pose = poses[img_i, :3, :4]
                 with torch.no_grad():
                     rgb, disp, acc, depth, extras = render(H, W, K, chunk=args.chunk, c2w=pose,
@@ -834,7 +886,10 @@ def train():
                 # logger.add_image('val/acc', acc, global_step, dataformats='HWC')
 
                 logger.add_scalar('val/psnr_fine', psnr, global_step)
+
                 logger.add_image('val/rgb_gt', target, global_step, dataformats='HWC')
+                logger.add_image('val/depth_gt', target_depth, global_step, dataformats='HWC')
+                logger.add_image('val/mask_gt', target_mask, global_step, dataformats='HWC')
 
                 if args.N_importance > 0:
                     rgb0 = extras['rgb0']

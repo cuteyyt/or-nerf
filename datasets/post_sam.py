@@ -1,17 +1,22 @@
+"""
+Prepare a 'sam' folder for running scenes with delete and lama-processing
+"""
+
 import argparse
 import json
 import os
 import shutil
 from pathlib import Path
+from subprocess import check_output
 
 import cv2
 import numpy as np
 from segment_anything import sam_model_registry, SamPredictor
 from tqdm import tqdm
 
-from mask_refine import mask_refine
 from utils.cam import map_3d_to_2d_project, map_2d_to_3d_colmap, gen_cam_param_colmap
 from utils.colmap.read_write_model import read_model
+from utils.mask_refine import mask_refine
 
 
 def save_masks(masks, out_path):
@@ -61,12 +66,12 @@ def pred_all_views(predictor, img_paths, out_dirs, points, masks, cameras, image
     num_points = opt['num_points']
 
     pred_idx = 0
-    # if 'pred_params' in opt:
-    #     if 'pred_idx' in opt['pred_params']:
-    #         pred_idx = opt['pred_params']['pred_idx']
-    #
-    # img_paths.insert(0, img_paths[pred_idx])
-    # img_paths.pop(pred_idx + 1)
+    if 'pred_params' in opt:
+        if 'pred_idx' in opt['pred_params']:
+            pred_idx = opt['pred_params']['pred_idx']
+
+    img_paths.insert(0, img_paths[pred_idx])
+    img_paths.pop(pred_idx + 1)
 
     dynamic_param = dict()
     with tqdm(total=len(img_paths)) as t_bar:
@@ -324,19 +329,6 @@ def load_sam(model_type, ckpt_path, device_type):
     return predictor
 
 
-def copy_imgs(in_dir, out_dir, img_file_type=None):
-    print(f'Copy files from {in_dir} to {out_dir}')
-    in_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if path.endswith(img_file_type)]
-
-    for in_path in tqdm(in_paths):
-        filename = Path(in_path).name
-        out_path = os.path.join(out_dir, filename)
-
-        shutil.copy(in_path, out_path)
-
-    print('--------------------------------')
-
-
 def read_json(json_path, dataset_name, scene_name):
     print(f'Read params from json file {json_path}')
     with open(json_path, 'r') as file:
@@ -399,7 +391,6 @@ def post_sam(args, ):
     in_dir, out_dir = args.in_dir, args.out_dir
     dataset_name, scene_name = args.dataset_name, args.scene_name
     json_path = args.json_path
-    img_file_type = args.img_file_type
     model_type, ckpt_path, device_type = args.model_type, args.ckpt_path, args.device_type
 
     # Read params from json
@@ -444,8 +435,8 @@ def post_sam(args, ):
         os.makedirs(item, exist_ok=True)
 
     # Copy ori imgs from dense folder to prepare_data folder
-    copy_imgs(in_imgs_dir, out_dirs['imgs_ori_dir'], img_file_type=img_file_type)
-    copy_imgs(os.path.join(in_dir, 'images'), out_dirs['imgs_dir'], img_file_type=img_file_type)
+    check_output('cp {}/*.png {}'.format(in_imgs_dir, out_dirs['imgs_ori_dir']), shell=True)
+    check_output('cp {}/*.png {}'.format(os.path.join(in_dir, 'images'), out_dirs['imgs_dir']), shell=True)
 
     # Register SAM model
     predictor = load_sam(model_type, ckpt_path, device_type)
@@ -474,7 +465,7 @@ def parse():
     parser.add_argument('--model_type', type=str, default='vit_h', choices=['vit_h'], help='prepare_data model type')
     parser.add_argument('--device_type', type=str, default='cuda', choices=['cuda'], help='device')
 
-    parser.add_argument('--json_path', type=str)
+    parser.add_argument('--json_path', type=str, default='configs/prepare_data/sam_points.json')
 
     args = parser.parse_args()
 

@@ -1,6 +1,6 @@
-import imageio
 import os
 
+import imageio
 import numpy as np
 
 
@@ -58,6 +58,35 @@ def _minify(basedir, factors=[], resolutions=[]):
         print('Done')
 
 
+def load_auxiliary_img(basedir, name, sfx, num_imgs):
+    imgdir = os.path.join(basedir, f'{name}' + sfx)
+    if not os.path.exists(imgdir):
+        raise RuntimeError(imgdir, 'does not exist, returning')
+
+    img_files = [os.path.join(imgdir, f) for f in sorted(os.listdir(imgdir)) if f.endswith('png')]  # noqa
+    if num_imgs != len(img_files):
+        print('Mismatch between imgs {} and poses {} !!!!'.format(len(img_files), num_imgs))
+        raise RuntimeError()
+
+    if name == 'depth':
+        imgs = [imread(f) / 255. for f in img_files]
+    elif name == 'label':
+        imgs = [imread(f) / 255. for f in img_files]
+    else:
+        raise RuntimeError(f'Not implemented name {name}')
+
+    imgs = np.stack(imgs, -1)
+
+    return imgs
+
+
+def imread(f):
+    if f.endswith('png'):
+        return imageio.imread(f, ignoregamma=True)
+    else:
+        return imageio.imread(f)
+
+
 def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
     poses_arr = np.load(os.path.join(basedir, 'poses_bounds.npy'))
     poses = poses_arr[:, :-2].reshape([-1, 3, 5]).transpose([1, 2, 0])
@@ -104,17 +133,14 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
     if not load_imgs:
         return poses, bds
 
-    def imread(f):
-        if f.endswith('png'):
-            return imageio.imread(f, ignoregamma=True)
-        else:
-            return imageio.imread(f)
-
     imgs = imgs = [imread(f)[..., :3] / 255. for f in imgfiles]
     imgs = np.stack(imgs, -1)
 
-    print('Loaded image data', imgs.shape, poses[:, -1, 0])
-    return poses, bds, imgs
+    depths = load_auxiliary_img(basedir, 'depth', '', poses.shape[-1])
+    masks = load_auxiliary_img(basedir, 'label', '', poses.shape[-1])
+
+    print('Loaded image data', imgs.shape, poses[:, -1, 0], depths.shape, masks.shape)
+    return poses, bds, imgs, depths, masks
 
 
 def normalize(x):
@@ -234,7 +260,7 @@ def spherify_poses(poses, bds):
 
 
 def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=False, path_zflat=False):
-    poses, bds, imgs = _load_data(basedir, factor=factor)  # factor=8 downsamples original imgs by 8x
+    poses, bds, imgs, depths, masks = _load_data(basedir, factor=factor)  # factor=8 downsamples original imgs by 8x
     print('Loaded', basedir, bds.min(), bds.max())
 
     # Correct rotation matrix ordering and move variable dim to axis 0
@@ -243,6 +269,9 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
     imgs = np.moveaxis(imgs, -1, 0).astype(np.float32)
     images = imgs
     bds = np.moveaxis(bds, -1, 0).astype(np.float32)
+
+    depths = np.moveaxis(depths, -1, 0).astype(np.float32)
+    masks = np.moveaxis(masks, -1, 0).astype(np.float32)
 
     # Rescale if bd_factor is provided
     sc = 1. if bd_factor is None else 1. / (bds.min() * bd_factor)
@@ -294,7 +323,7 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
 
     c2w = poses_avg(poses)
     print('Data:')
-    print(poses.shape, images.shape, bds.shape)
+    print(poses.shape, images.shape, bds.shape, depths.shape, masks.shape)
 
     dists = np.sum(np.square(c2w[:3, 3] - poses[:, :3, 3]), -1)
     i_test = np.argmin(dists)
@@ -303,4 +332,7 @@ def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fal
     images = images.astype(np.float32)
     poses = poses.astype(np.float32)
 
-    return images, poses, bds, render_poses, i_test
+    depths = depths[..., np.newaxis]
+    masks = masks[..., np.newaxis]
+
+    return images, depths, masks, poses, bds, render_poses, i_test

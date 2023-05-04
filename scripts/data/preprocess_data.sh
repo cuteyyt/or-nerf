@@ -1,3 +1,6 @@
+# Specify a script name to run all scenes in one
+
+# Params
 SCRIPT=$1
 set -e
 

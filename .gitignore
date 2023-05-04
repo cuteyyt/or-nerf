@@ -85,5 +85,8 @@ fabric.properties
 /data/
 /logs/
 /prior/lama/outputs/
-/main.py
-/backup/
+
+/show_img.py
+/run_gpu0.sh
+/run_gpu1.sh
+

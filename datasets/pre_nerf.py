@@ -1,5 +1,5 @@
 """
-This file prepare a 'sparse' folder for run nerf without delete
+Prepare a 'sparse' folder for running scenes without delete and processing sam
 """
 import argparse
 import copy
@@ -17,7 +17,6 @@ from utils.img import imgs2video, down_sample_imgs
 
 filename_convert_dict = {
     'nerf_llff_data': {
-        # 'room': lambda x: x.replace('JPG', 'png'),
         'fortress': lambda x: 'image' + '{:0>3d}'.format(int(x.split('_')[1]) - 1800),
     },
     'llff_real_iconic': {
@@ -58,9 +57,10 @@ def handle_cams(in_dir, out_dir, dataset_name, scene_name):
 
 
 def handle_imgs(in_ori_dir, out_ori_dir, kwargs):
-    # Pay attention to exif. Now we did not handle this
+    # Pay attention to exif info. Now we did not handle this
     # We need to check whether there is an exif transpose in the image
     # If yes, we apply the transform and re-write the image
+
     print(f'Copy img files from {Path(in_ori_dir).parent} to {Path(out_ori_dir).parent}')
 
     in_ori_paths = [os.path.join(in_ori_dir, path) for path in os.listdir(in_ori_dir) if
@@ -93,7 +93,7 @@ def parse():
     parser.add_argument('--dataset_name', type=str)
     parser.add_argument('--scene_name', type=str)
 
-    parser.add_argument('--json_path', type=str, default='configs/prepare_data/sam.json')
+    parser.add_argument('--json_path', type=str, default='configs/prepare_data/sam_points.json')
 
     args = parser.parse_args()
 
@@ -119,29 +119,6 @@ def main():
     if dataset_name == 'spinnerf_dataset':
         params['img_indices'] = 40
 
-    # Reformat nerf_synthetic_colmap structure
-    if dataset_name == 'nerf_synthetic_colmap':
-        # in_img_dir = os.path.join(in_dir, dataset_name, scene_name, 'colmap_results/dense/images')
-        # out_img_dir = os.path.join(in_dir, dataset_name, scene_name, f'images')
-        # if not os.path.exists(out_img_dir):
-        #     os.makedirs(out_img_dir)
-        #     check_output('cp {}/* {}'.format(in_img_dir, out_img_dir), shell=True)
-
-        in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'colmap_results/dense/sparse')
-        out_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
-        if not os.path.exists(out_cam_dir):
-            os.makedirs(out_cam_dir)
-            check_output('cp {}/* {}'.format(in_cam_dir, out_cam_dir), shell=True)
-
-    # Handle cam params first
-    # in_cam_dir = os.path.join(in_dir, dataset_name, scene_name, 'sparse/0')
-    # out_cam_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'sparse/0')
-    #
-    # os.makedirs(out_cam_dir, exist_ok=True)
-    # in_img_names = handle_cams(in_cam_dir, out_cam_dir, dataset_name, scene_name)
-    # params['in_img_names'] = in_img_names
-
-    # Handle images next, this is because we need names from COLMAP
     in_ori_img_dir = os.path.join(in_dir, dataset_name, scene_name, 'images')
     out_ori_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'images')
 

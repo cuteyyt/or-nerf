@@ -1,3 +1,8 @@
+# Prepare lama priors for running spinnerf
+# note this script is not include in the 'run in one' edition as it has a little modification
+# or you can add FACTOR to run
+
+# Params
 DATASET=$1
 SCENE=$2
 DATADIR=$3
@@ -5,7 +10,7 @@ FACTOR=$4
 
 set -e
 
-# Generate ori depth
+# Generate original depth
 cd comparison/SPIn-NeRF
 
 rm -rf lama/LaMa_test_images
@@ -61,13 +66,3 @@ rm -rf output
 rm -rf outputs
 
 cd ..
-
-# Training with spinnerf backbone
-python DS_NeRF/run_nerf.py \
-  --config ../../configs/comparison/spinnerf/delete/"$SCENE".txt \
-  --i_feat 200 \
-  --lpips \
-  --i_video 10000 \
-  --N_iters 10001 \
-  --N_gt 0 \
-  --llffhold 8

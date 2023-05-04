@@ -13,7 +13,7 @@ from tqdm import tqdm
 def imgs2video(in_dir, out_path, img_file_type, fps=10):
     print(f'Cat images from {in_dir} to video {out_path}')
     # path = glob.glob(os.path.join(in_dir, '*.png'))
-    img_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if path.lower().endswith(img_file_type)]
+    img_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if path.endswith(img_file_type)]
     img_paths = sorted(img_paths)
 
     first_img = cv2.imread(img_paths[0])
@@ -32,7 +32,9 @@ def imgs2video(in_dir, out_path, img_file_type, fps=10):
 def imgs2grid(in_dir, out_path, img_file_type=None):
     print(f'Merge images from {in_dir} to grid {out_path}')
 
-    img_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if path.lower().endswith(img_file_type)]
+    img_paths = [os.path.join(in_dir, path) for path in os.listdir(in_dir) if path.endswith(img_file_type)]
+    img_paths = sorted(img_paths)
+
     n_imgs = len(img_paths)
 
     # Make the grid to ~16:9
