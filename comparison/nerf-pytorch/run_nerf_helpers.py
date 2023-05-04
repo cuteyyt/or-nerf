@@ -10,11 +10,6 @@ mse2psnr = lambda x: -10. * torch.log(x) / torch.log(torch.Tensor([10.]))
 to8b = lambda x: (255 * np.clip(x, 0, 1)).astype(np.uint8)
 
 
-class Discriminator():
-    def __init__(self):
-        pass
-
-
 # Positional encoding (section 5.1)
 class Embedder:
     def __init__(self, **kwargs):

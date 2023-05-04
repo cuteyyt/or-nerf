@@ -707,7 +707,7 @@ def train():
 
     start = start + 1
     global_step = start
-    with tqdm(total=args.N_iters, ) as p_bar:
+    with tqdm(total=args.N_iters - start + 1) as p_bar:
         for i in range(start, N_iters):
             time0 = time.time()
 
