@@ -164,6 +164,7 @@ if __name__ == "__main__":
     parser.add_argument("--text_prompt_json", type=str, help="path to text prompt json")
 
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
+    parser.add_argument("--hybrid", type=bool, action='store_true', help="combine text prompt with points")
     args = parser.parse_args()
 
     # cfg
@@ -180,6 +181,7 @@ if __name__ == "__main__":
     #text_threshold = args.text_threshold
     text_prompt_json_path = args.text_prompt_json
     device = args.device
+    hybrid = args.hybrid
 
 
     input_dir = "data/{}_sparse/{}".format(dataset, scene)
@@ -199,8 +201,7 @@ if __name__ == "__main__":
 
     cam_dir = os.path.join(input_dir, 'sparse/0')
     _, images, _= read_model(path=cam_dir, ext='.bin')
-
-
+    
     with tqdm(total=len(images) - 1) as t_bar:
         for image_id, image in images.items():
             image_filestem = Path(image.name)
@@ -214,6 +215,7 @@ if __name__ == "__main__":
             if not os.path.exists(image_path):
                 t_bar.update(1)
                 continue
+
             image = cv2.imread(image_path)
             mask = np.zeros((image.shape[0], image.shape[1])).astype(np.int32)
             for text_prompt in text_prompt_list:
@@ -276,6 +278,9 @@ if __name__ == "__main__":
                         )
 
             t_bar.update(1)
+            if hybrid:
+                print("-----------------Generate first mask only, check points prompt-----------------")
+                exit()
 
         # draw output image
 
