@@ -3,7 +3,7 @@ scene = trash
 
 expname = trash
 basedir = ./logs/nerf/ori
-datadir = ./data/spinnerf_dataset/trash
+datadir = ./data/spinnerf_dataset_sparse/trash
 
 factor = 4
 llffhold = 8

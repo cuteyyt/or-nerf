@@ -3,7 +3,7 @@ scene = 3
 
 expname = 3
 basedir = ./logs/nerf/ori
-datadir = ./data/spinnerf_dataset/3
+datadir = ./data/spinnerf_dataset_sparse/3
 
 factor = 4
 llffhold = 8

@@ -13,5 +13,5 @@ python datasets/post_sam.py \
   --out_dir "$DATADIR" \
   --dataset_name "$DATASET" \
   --scene_name "$SCENE" \
-  --json_path configs/prepare_data/sam.json \
+  --json_path configs/prepare_data/sam_points.json \
   --ckpt_path ckpts/sam/sam_vit_h_4b8939.pth

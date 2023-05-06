@@ -1,9 +1,9 @@
 dataset = spinnerf_dataset
-scene = book
+scene = 7
 
-expname = book
+expname = 7
 basedir = ./logs/nerf/ori
-datadir = ./data/spinnerf_dataset_sparse/book
+datadir = ./data/spinnerf_dataset_sparse/7
 
 factor = 4
 llffhold = 8
