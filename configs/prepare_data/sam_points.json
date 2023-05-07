@@ -462,6 +462,27 @@
         "pred_iters": 5,
         "threshold": 0.85
       }
+    },
+    "1": {
+      "down_factor": 4,
+      "points": [
+        [
+          595,
+          205
+        ],
+        [
+          702,
+          173
+        ],
+        [
+          755,
+          249
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     }
   }
 }

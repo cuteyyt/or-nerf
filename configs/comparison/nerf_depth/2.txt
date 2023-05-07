@@ -1,0 +1,17 @@
+dataset = spinnerf_dataset
+scene = 2
+
+expname = 2
+basedir = ./logs/nerf_depth
+datadir = ./data/spinnerf_dataset_depth/2
+
+factor = 4
+llffhold = 8
+
+N_rand = 1024
+N_samples = 64
+N_importance = 64
+
+use_viewdirs = True
+raw_noise_std = 1e0
+
