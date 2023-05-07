@@ -14,7 +14,7 @@ python datasets/pre_nerf.py \
   --out_dir "$DATADIR" \
   --dataset_name "$DATASET" \
   --scene_name "$SCENE" \
-  --json_path configs/prepare_data/sam.json
+  --json_path configs/prepare_data/sam_points.json
 
 # Use LLFF to reconstruct cam params
 cd prior/LLFF
