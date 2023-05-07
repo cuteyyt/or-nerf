@@ -101,6 +101,7 @@ def reconstruction(args):
     update_AlphaMask_list = args.update_AlphaMask_list
     n_lamb_sigma = args.n_lamb_sigma
     n_lamb_sh = args.n_lamb_sh
+    no_bb = args.no_bb
 
     
     if args.add_timestamp:
@@ -121,6 +122,7 @@ def reconstruction(args):
     # init parameters
     # tensorVM, renderer = init_parameters(args, train_dataset.scene_bbox.to(device), reso_list[0])
     aabb = train_dataset.scene_bbox.to(device)
+    #print(aabb)
     reso_cur = N_to_reso(args.N_voxel_init, aabb)
     nSamples = min(args.nSamples, cal_n_samples(reso_cur,args.step_ratio))
 
@@ -239,23 +241,24 @@ def reconstruction(args):
             summary_writer.add_scalar('test/psnr', np.mean(PSNRs_test), global_step=iteration)
 
 
+        if not no_bb:
+            #print("update bounding box")
+            if iteration in update_AlphaMask_list:
 
-        if iteration in update_AlphaMask_list:
-
-            if reso_cur[0] * reso_cur[1] * reso_cur[2]<256**3:# update volume resolution
-                reso_mask = reso_cur
-            new_aabb = tensorf.updateAlphaMask(tuple(reso_mask))
-            if iteration == update_AlphaMask_list[0]:
-                tensorf.shrink(new_aabb)
-                # tensorVM.alphaMask = None
-                L1_reg_weight = args.L1_weight_rest
-                print("continuing L1_reg_weight", L1_reg_weight)
+                if reso_cur[0] * reso_cur[1] * reso_cur[2]<256**3:# update volume resolution
+                    reso_mask = reso_cur
+                new_aabb = tensorf.updateAlphaMask(tuple(reso_mask))
+                if iteration == update_AlphaMask_list[0]:
+                    tensorf.shrink(new_aabb)
+                    # tensorVM.alphaMask = None
+                    L1_reg_weight = args.L1_weight_rest
+                    print("continuing L1_reg_weight", L1_reg_weight)
 
 
-            if not args.ndc_ray and iteration == update_AlphaMask_list[1]:
-                # filter rays outside the bbox
-                allrays,allrgbs = tensorf.filtering_rays(allrays,allrgbs)
-                trainingSampler = SimpleSampler(allrgbs.shape[0], args.batch_size)
+                if not args.ndc_ray and iteration == update_AlphaMask_list[1]:
+                    # filter rays outside the bbox
+                    allrays,allrgbs = tensorf.filtering_rays(allrays,allrgbs)
+                    trainingSampler = SimpleSampler(allrgbs.shape[0], args.batch_size)
 
 
         if iteration in upsamp_list:

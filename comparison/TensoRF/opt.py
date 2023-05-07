@@ -69,6 +69,7 @@ def config_parser(cmd=None):
                         help='scaling sampling distance for computation')
     parser.add_argument("--density_shift", type=float, default=-10,
                         help='shift density in softplus; making density = 0  when feature == 0')
+    parser.add_argument("--no_bb", action="store_true", help="strip updating bounding box in training")
                         
     # network decoder
     parser.add_argument("--shadingMode", type=str, default="MLP_PE",

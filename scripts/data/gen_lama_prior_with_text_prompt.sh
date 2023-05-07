@@ -22,7 +22,8 @@ python datasets/pre_text_prompt.py \
   --dataset "${DATASET}" \
   --scene "${SCENE}" \
   --text_prompt_json configs/prepare_data/text_prompt.json \
-  --device "cuda"
+  --device "cuda" \
+  #--hybrid
 
 
 # Lama dataset preparation

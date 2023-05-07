@@ -1,5 +1,5 @@
 dataset_name = llff
-datadir = ./data/spinnerf_dataset_tensorfs/4
+datadir = ./data/spinnerf_dataset_tensorf/4
 expname =  4
 basedir = ./logs/tensorf
 

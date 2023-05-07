@@ -8,7 +8,7 @@ set -e
 sh "$SCRIPT" qq3
 sh "$SCRIPT" qq6
 sh "$SCRIPT" qq10
-#sh "$SCRIPT" qq11
+sh "$SCRIPT" qq11
 sh "$SCRIPT" qq13
 sh "$SCRIPT" qq16
 sh "$SCRIPT" qq17
@@ -18,7 +18,7 @@ sh "$SCRIPT" qq21
 sh "$SCRIPT" data5_piano
 
 # nerf llff data
-#sh "$SCRIPT" room
+sh "$SCRIPT" room
 sh "$SCRIPT" horns
 sh "$SCRIPT" fortress
 
