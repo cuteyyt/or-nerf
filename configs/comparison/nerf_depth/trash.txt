@@ -1,7 +1,7 @@
 dataset = spinnerf_dataset
 scene = trash
 
-expname = book
+expname = trash
 basedir = ./logs/nerf_depth
 datadir = ./data/spinnerf_dataset_depth/trash
 

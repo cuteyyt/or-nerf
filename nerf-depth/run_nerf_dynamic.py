@@ -557,20 +557,7 @@ def config_parser():
 
 
 def discriminator_loss(mask_indices, non_mask_indices, pred_values, pred_gt, args, ):
-    if len(mask_indices) > 0 and len(mask_indices) != args.N_rand:
-        pred_gt_mask = pred_gt[mask_indices]
-        pred_gt_non_mask = pred_gt[non_mask_indices]
-        pred_values_mask = pred_values[mask_indices]
-
-        label_gt_mask = torch.ones_like(pred_gt_mask, dtype=torch.float32)
-        label_gt_non_mask = torch.ones_like(pred_gt_non_mask, dtype=torch.float32)
-        label_values_mask = torch.zeros_like(pred_values_mask, dtype=torch.float32)
-
-        d_loss = adversarial_loss(pred_gt_mask, label_gt_mask) + \
-                 adversarial_loss(pred_gt_non_mask, label_gt_non_mask) + \
-                 adversarial_loss(pred_values_mask, label_values_mask)
-
-    elif len(mask_indices) == args.N_rand:  # non mask area equals to zero
+    if len(mask_indices) > 0:
         pred_gt_mask = pred_gt[mask_indices]
         pred_values_mask = pred_values[mask_indices]
 
@@ -579,11 +566,8 @@ def discriminator_loss(mask_indices, non_mask_indices, pred_values, pred_gt, arg
 
         d_loss = adversarial_loss(pred_gt_mask, label_gt_mask) + \
                  adversarial_loss(pred_values_mask, label_values_mask)
-    elif len(mask_indices) == 0:  # mask area equals to zero
-        pred_gt_non_mask = pred_gt[non_mask_indices]
-        label_gt_non_mask = torch.ones_like(pred_gt_non_mask, dtype=torch.float32)
-
-        d_loss = adversarial_loss(pred_gt_non_mask, label_gt_non_mask)
+    else:
+        d_loss = torch.tensor(0.0).cuda().float()
 
     return d_loss
 

@@ -483,6 +483,27 @@
       "pred_params": {
         "pred_iters": 5
       }
+    },
+    "9": {
+      "down_factor": 4,
+      "points": [
+        [
+          566,
+          336
+        ],
+        [
+          644,
+          391
+        ],
+        [
+          601,
+          268
+        ]
+      ],
+      "num_points": 1,
+      "pred_params": {
+        "pred_iters": 5
+      }
     }
   }
 }

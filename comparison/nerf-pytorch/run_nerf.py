@@ -644,7 +644,7 @@ def train():
     if args.render_all:
         print('RENDER ALL')
         with torch.no_grad():
-            savedir = os.path.join(basedir, expname, 'render_all_{:06d}'.format(start))
+            savedir = os.path.join(basedir, expname, 'render_all    _{:06d}'.format(start))
 
             os.makedirs(savedir, exist_ok=True)
             os.makedirs(f'{savedir}_depth', exist_ok=True)

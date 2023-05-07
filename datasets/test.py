@@ -1,5 +1,5 @@
 """
-Calculate metrics for net training results
+Calculate metrics
 """
 
 import argparse
@@ -11,38 +11,35 @@ from skimage.metrics import peak_signal_noise_ratio as compare_psnr
 from tqdm import tqdm
 
 
-def cal_psnr(pred_dir, target_dir):
-    pred_paths = [os.path.join(pred_dir, f) for f in pred_dir]
-    pred_paths = sorted(pred_paths)
-
-    target_paths = [os.path.join(target_dir, f) for f in target_dir]
-    target_paths = sorted(target_paths)
-
-    psnr_all = 0.
-    for pred_path, target_path in zip(pred_paths, target_paths):
-        pred = cv2.imread(pred_path)
-        target = cv2.imread(target_path)
-        psnr = compare_psnr(target, pred)
-        psnr_all += psnr
-    psnr_mean = psnr_all / len(pred_paths)
-
-    print(f'psnr mean of {pred_dir} {len(pred_paths)} imgs is: {psnr_mean}')
-    return psnr_mean
+def cal_psnr(pred, target):
+    psnr = compare_psnr(target, pred)
+    return psnr
 
 
-def rgb2bgr(in_dir, out_dir):
-    for f in os.listdir(in_dir):
-        in_path = os.path.join(in_dir, f)
-        out_path = os.path.join(out_dir, f)
+def test_render(pred_dir, target_dir):
+    in_paths = [os.path.join(pred_dir, f) for f in sorted(os.listdir(pred_dir)) if f.endswith('png')]
+    target_paths = [os.path.join(target_dir, f) for f in sorted(os.listdir(target_dir)) if f.endswith('png')]
 
-        img = cv2.imread(in_path)
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    # Cal pixel-wise accuracy and iou for each img
+    print(f'Test psnr for {target_dir}')
+    psnr_all = list()
+    with tqdm(total=len(in_paths)) as p_bar:
+        for (in_path, target_path) in zip(in_paths, target_paths):
+            pred = cv2.imread(in_path)
+            target = cv2.imread(target_path)
 
-        cv2.imwrite(out_path, img)
+            psnr = cal_psnr(pred, target)
+            psnr_all.append(psnr)
 
+            p_bar.update()
 
-def test_render(in_dir, out_dir):
-    pass
+    with open(os.path.join(pred_dir, 'test_results.txt'), 'w') as f:
+        for i, psnr in enumerate(psnr_all):
+            f.write('img {}: psnr {:.3f}\n'.format(in_paths[i], psnr))
+
+        print('scene: psnr {:.2f}'.format(sum(psnr_all) / len(psnr_all)))
+        f.write('scene: psnr {:.3f}'.format(sum(psnr_all) / len(psnr_all)))
+        f.close()
 
 
 def cal_iou(pred, target, eps=1e-10):

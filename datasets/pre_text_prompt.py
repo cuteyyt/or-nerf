@@ -1,31 +1,31 @@
+"""
+Text prompt for sam
+"""
+
 import argparse
+import json
 import os
-import copy
 import sys
-import json
-
-import numpy as np
-import json
-import torch
 from pathlib import Path
-from tqdm import tqdm
 
-from PIL import Image, ImageDraw, ImageFont
+import torch
+from PIL import Image
+from tqdm import tqdm
 
 # Grounding DINO
 sys.path.append(os.path.join(os.getcwd(), "prior/Grounded-Segment-Anything"))
 import GroundingDINO.groundingdino.datasets.transforms as T
 from GroundingDINO.groundingdino.models import build_model
-from GroundingDINO.groundingdino.util import box_ops
 from GroundingDINO.groundingdino.util.slconfig import SLConfig
 from GroundingDINO.groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
 
 # segment anything
-from segment_anything import build_sam, SamPredictor 
+from segment_anything import build_sam, SamPredictor
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.colmap.read_write_model import read_model
+
 
 def save_masks(masks, out_path):
     masks_img = (masks * 255).astype(np.uint8)
@@ -37,6 +37,7 @@ def draw_masks_on_img(img, masks, out_path):
     img[masks >= 1] = 255
 
     cv2.imwrite(out_path, img)
+
 
 def load_image(image_path):
     # load image
@@ -99,11 +100,12 @@ def get_grounding_output(model, image, caption, box_threshold, text_threshold, w
 
     return boxes_filt, pred_phrases
 
+
 def show_mask(mask, ax, random_color=False):
     if random_color:
         color = np.concatenate([np.random.random(3), np.array([0.6])], axis=0)
     else:
-        color = np.array([30/255, 144/255, 255/255, 0.6])
+        color = np.array([30 / 255, 144 / 255, 255 / 255, 0.6])
     h, w = mask.shape[-2:]
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
     ax.imshow(mask_image)
@@ -112,7 +114,7 @@ def show_mask(mask, ax, random_color=False):
 def show_box(box, ax, label):
     x0, y0 = box[0], box[1]
     w, h = box[2] - box[0], box[3] - box[1]
-    ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0,0,0,0), lw=2)) 
+    ax.add_patch(plt.Rectangle((x0, y0), w, h, edgecolor='green', facecolor=(0, 0, 0, 0), lw=2))
     ax.text(x0, y0, label)
 
 
@@ -134,7 +136,7 @@ def save_mask_data(output_dir, mask_list, box_list, label_list):
     for label, box in zip(label_list, box_list):
         value += 1
         name, logit = label.split('(')
-        logit = logit[:-1] # the last is ')'
+        logit = logit[:-1]  # the last is ')'
         json_data.append({
             'value': value,
             'label': name,
@@ -143,7 +145,7 @@ def save_mask_data(output_dir, mask_list, box_list, label_list):
         })
     # with open(os.path.join(output_dir, 'mask.json'), 'w') as f:
     #     json.dump(json_data, f)
-    
+
 
 if __name__ == "__main__":
 
@@ -159,8 +161,8 @@ if __name__ == "__main__":
     parser.add_argument("--text_prompt", type=str, help="text prompt")
     parser.add_argument("--dataset", type=str, required=True, help="dataset name")
     parser.add_argument("--scene", type=str, required=True, help="scene name")
-    #parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
-    #parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
+    # parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
+    # parser.add_argument("--text_threshold", type=float, default=0.25, help="text threshold")
     parser.add_argument("--text_prompt_json", type=str, help="path to text prompt json")
 
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
@@ -172,20 +174,19 @@ if __name__ == "__main__":
     grounded_checkpoint = args.grounded_checkpoint  # change the path of the model
     sam_checkpoint = args.sam_checkpoint
     image_path = args.input_image
-    #input_dir = args.input_dir
+    # input_dir = args.input_dir
     text_prompt = args.text_prompt
-    #output_dir = args.output_dir
+    # output_dir = args.output_dir
     dataset = args.dataset
     scene = args.scene
-    #box_threshold = args.box_threshold
-    #text_threshold = args.text_threshold
+    # box_threshold = args.box_threshold
+    # text_threshold = args.text_threshold
     text_prompt_json_path = args.text_prompt_json
     device = args.device
     hybrid = args.hybrid
 
-
     input_dir = "data/{}_sparse/{}".format(dataset, scene)
-    output_dir = "data/{}_sam/{}".format(dataset, scene)
+    output_dir = "data/{}_text/{}".format(dataset, scene)
     # make dir
     os.makedirs(output_dir, exist_ok=True)
     # open json
@@ -200,8 +201,8 @@ if __name__ == "__main__":
     model = load_model(config_file, grounded_checkpoint, device=device)
 
     cam_dir = os.path.join(input_dir, 'sparse/0')
-    _, images, _= read_model(path=cam_dir, ext='.bin')
-    
+    _, images, _ = read_model(path=cam_dir, ext='.bin')
+
     with tqdm(total=len(images) - 1) as t_bar:
         for image_id, image in images.items():
             image_filestem = Path(image.name)
@@ -220,7 +221,7 @@ if __name__ == "__main__":
             mask = np.zeros((image.shape[0], image.shape[1])).astype(np.int32)
             for text_prompt in text_prompt_list:
                 # load image
-                #print(text_prompt)
+                # print(text_prompt)
                 image_pil, image = load_image(image_path)
 
                 # run grounding dino model
@@ -231,7 +232,7 @@ if __name__ == "__main__":
                 # initialize SAM
                 predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
                 image = cv2.imread(image_path)
-                #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 predictor.set_image(image, image_format='BGR')
 
                 H, W = image.shape[:2]
@@ -243,14 +244,13 @@ if __name__ == "__main__":
                 boxes_filt = boxes_filt.cpu()
                 transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
                 print(transformed_boxes)
-                
 
-                if len(transformed_boxes) != 0 :
+                if len(transformed_boxes) != 0:
                     masks, _, _ = predictor.predict_torch(
-                        point_coords = None,
-                        point_labels = None,
-                        boxes = transformed_boxes.to(device),
-                        multimask_output = False,
+                        point_coords=None,
+                        point_labels=None,
+                        boxes=transformed_boxes.to(device),
+                        multimask_output=False,
                     )
                     print(masks.shape)
 
@@ -262,18 +262,18 @@ if __name__ == "__main__":
                     box_img_dir = os.path.join(output_dir, 'imgs_with_boxes', image_filestem)
                     masks = masks.cpu().numpy()
 
-                    mask += masks[0][0].astype(np.int32) 
+                    mask += masks[0][0].astype(np.int32)
                     save_masks(mask.copy(), mask_dir)
                     draw_masks_on_img(image.copy(), mask.copy(), mask_img_dir)
-                    
-                    plt.figure(figsize=(10,10))
+
+                    plt.figure(figsize=(10, 10))
                     plt.imshow(image)
                     for box, label in zip(boxes_filt, pred_phrases):
                         print(box, label)
                         show_box(box.numpy(), plt.gca(), label)
                         plt.axis('off')
                         plt.savefig(
-                            box_img_dir, 
+                            box_img_dir,
                             bbox_inches="tight", dpi=300, pad_inches=0.0
                         )
 
@@ -283,8 +283,6 @@ if __name__ == "__main__":
                 exit()
 
         # draw output image
-
-
 
         # plt.figure(figsize=(10, 10))
         # plt.imshow(image)
@@ -300,4 +298,3 @@ if __name__ == "__main__":
         # )
 
         # save_mask_data(output_dir, masks, boxes_filt, pred_phrases)
-

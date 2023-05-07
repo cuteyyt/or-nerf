@@ -1,6 +1,6 @@
-import imageio
 import os
 
+import imageio
 import numpy as np
 
 

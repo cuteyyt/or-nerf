@@ -1,3 +1,4 @@
+# Points mask test
 python datasets/test.py --pred_dir data/spinnerf_dataset_sam/1/masks --target_dir data/spinnerf_dataset/1/images_4/label --mode mask
 python datasets/test.py --pred_dir data/spinnerf_dataset_sam/2/masks --target_dir data/spinnerf_dataset/2/images_4/label --mode mask
 python datasets/test.py --pred_dir data/spinnerf_dataset_sam/3/masks --target_dir data/spinnerf_dataset/3/images_4/label --mode mask

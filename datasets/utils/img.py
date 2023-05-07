@@ -10,6 +10,17 @@ from torchvision.utils import make_grid, save_image
 from tqdm import tqdm
 
 
+def rgb2bgr(in_dir, out_dir):
+    for f in os.listdir(in_dir):
+        in_path = os.path.join(in_dir, f)
+        out_path = os.path.join(out_dir, f)
+
+        img = cv2.imread(in_path)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+        cv2.imwrite(out_path, img)
+
+
 def imgs2video(in_dir, out_path, img_file_type, fps=10):
     print(f'Cat images from {in_dir} to video {out_path}')
     # path = glob.glob(os.path.join(in_dir, '*.png'))
