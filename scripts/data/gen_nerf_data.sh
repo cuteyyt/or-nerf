@@ -21,33 +21,38 @@ cd prior/LLFF
 python imgs2poses.py ../../"$DATADIR"/"$DATASET"_sparse/"$SCENE"
 cd ../../
 
+# For spinnerf dataset test
+cd prior/LLFF
+python imgs2poses.py ../../"$DATADIR"/test/"$DATASET"_sparse/"$SCENE"
+cd ../../
+
 # In case LLFF fails to reconstruct cam params,
 # you may reconstruct cam params manually using the following commands
 
-## First remove broken reconstruction files
-#rm -rf "$DATADIR"/"$DATASET"_sparse/"$SCENE"/sparse
-#rm -rf "$DATADIR"/"$DATASET"_sparse/"$SCENE"/database.db
-#rm -rf "$DATADIR"/"$DATASET"_sparse/"$SCENE"/colmap_output.txt
-#
-## Then reconstruct
-#DATASET_PATH="$DATADIR"/"$DATASET"_sparse/"$SCENE"
-#
-#colmap feature_extractor \
-#  --database_path "$DATASET_PATH"/database.db \
-#  --image_path "$DATASET_PATH"/images \
-#  --ImageReader.single_camera '1'
-#
-#colmap exhaustive_matcher \
-#  --database_path "$DATASET_PATH"/database.db
-#
-#mkdir "$DATASET_PATH"/sparse
-#
-#colmap mapper \
-#  --database_path "$DATASET_PATH"/database.db \
-#  --image_path "$DATASET_PATH"/images \
-#  --output_path "$DATASET_PATH"/sparse
-#
-## Finally run imgs2poses again to generate poses_bounds.npy
-#cd prior/LLFF
-#python imgs2poses.py ../../"$DATADIR"/"$DATASET"_sparse/"$SCENE"
-#cd ../../
+# First remove broken reconstruction files
+rm -rf "$DATADIR"/"$DATASET"_sparse/"$SCENE"/sparse
+rm -rf "$DATADIR"/"$DATASET"_sparse/"$SCENE"/database.db
+rm -rf "$DATADIR"/"$DATASET"_sparse/"$SCENE"/colmap_output.txt
+
+# Then reconstruct
+DATASET_PATH="$DATADIR"/"$DATASET"_sparse/"$SCENE"
+
+colmap feature_extractor \
+  --database_path "$DATASET_PATH"/database.db \
+  --image_path "$DATASET_PATH"/images \
+  --ImageReader.single_camera '1'
+
+colmap exhaustive_matcher \
+  --database_path "$DATASET_PATH"/database.db
+
+mkdir "$DATASET_PATH"/sparse
+
+colmap mapper \
+  --database_path "$DATASET_PATH"/database.db \
+  --image_path "$DATASET_PATH"/images \
+  --output_path "$DATASET_PATH"/sparse
+
+# Finally run imgs2poses again to generate poses_bounds.npy
+cd prior/LLFF
+python imgs2poses.py ../../"$DATADIR"/"$DATASET"_sparse/"$SCENE"
+cd ../../

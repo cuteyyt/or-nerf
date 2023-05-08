@@ -581,9 +581,7 @@ def nerf_loss(mask_indices, rgb, target_s, depth, t_depth, pred_values, ):
 
     # Depth loss, only depths in the mask region are supervised
     if len(mask_indices) > 0:
-        depth_mask = depth[mask_indices]
-        t_depth_mask = t_depth[mask_indices, 0]
-        depth_loss = img2mse(depth_mask, t_depth_mask)
+        depth_loss = img2mse(depth, t_depth[:, 0])
     else:
         depth_loss = torch.tensor(0.0).cuda().float()
 
@@ -845,7 +843,7 @@ def train():
 
             mask_indices = torch.nonzero(t_mask[:, 0] == 1, as_tuple=False)[:, 0]
             non_mask_indices = torch.nonzero(t_mask[:, 0] == 0, as_tuple=False)[:, 0]
-            assert len(mask_indices) + len(non_mask_indices) == args.N_rand
+            # assert len(mask_indices) + len(non_mask_indices) == args.N_rand
 
             # Train Generator
             optimizer.zero_grad()
@@ -951,7 +949,7 @@ def train():
                     pred_gt = discriminator(target, target_depth[..., 0][..., None])
                     pred_values = discriminator(rgb, depth[..., None])
 
-                    print(pred_gt.shape, pred_values.shape)
+                    # print(pred_gt.shape, pred_values.shape)
 
                     pred_gt = pred_gt.detach().cpu().numpy()
                     pred_values = pred_values.detach().cpu().numpy()

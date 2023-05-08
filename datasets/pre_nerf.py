@@ -5,6 +5,7 @@ import argparse
 import copy
 import json
 import os
+import shutil
 from pathlib import Path
 from subprocess import check_output
 
@@ -67,8 +68,8 @@ def handle_imgs(in_ori_dir, out_ori_dir, kwargs):
                     path.lower().endswith(kwargs['img_file_type'])]
     in_ori_paths = sorted(in_ori_paths)
 
-    if 'img_indices' in kwargs:
-        in_ori_paths = in_ori_paths[kwargs['img_indices']:]
+    # if 'img_indices' in kwargs:
+    #     in_ori_paths = in_ori_paths[kwargs['img_indices']:]
 
     i = 0
     for in_ori_path in tqdm(in_ori_paths):
@@ -82,6 +83,17 @@ def handle_imgs(in_ori_dir, out_ori_dir, kwargs):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
         down_sample_imgs(out_ori_dir, out_dir, kwargs['down_factor'], img_suffix='png')
+
+        if 'test' in out_ori_dir:
+            paths = [os.path.join(out_dir, f) for f in sorted(os.listdir(out_dir)) if
+                     f.endswith(kwargs['img_file_type'])]
+            gt_paths = paths[:40]
+
+            tgt_dir = os.path.join(Path(out_ori_dir).parent, f'images_gt')
+            os.makedirs(tgt_dir, exist_ok=True)
+
+            for gt_path in gt_paths:
+                shutil.move(gt_path, os.path.join(tgt_dir, Path(gt_path).name))
 
 
 def parse():
@@ -118,6 +130,7 @@ def main():
 
     if dataset_name == 'spinnerf_dataset':
         params['img_indices'] = 40
+        out_dir = os.path.join(out_dir, 'test')
 
     in_ori_img_dir = os.path.join(in_dir, dataset_name, scene_name, 'images')
     out_ori_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'images')
