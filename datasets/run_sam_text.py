@@ -9,10 +9,12 @@ import sys
 from pathlib import Path
 
 import torch
+from PIL import Image
 from tqdm import tqdm
 
 # Grounding DINO
 sys.path.append(os.path.join(os.getcwd(), "prior/Grounded-Segment-Anything"))
+import GroundingDINO.groundingdino.datasets.transforms as T
 from GroundingDINO.groundingdino.models import build_model
 from GroundingDINO.groundingdino.util.slconfig import SLConfig
 from GroundingDINO.groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
@@ -23,6 +25,20 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.colmap.read_write_model import read_model
+
+
+def load_image(image_path):
+    image_pil = Image.open(image_path).convert("RGB")  # load image
+
+    transform = T.Compose(
+        [
+            T.RandomResize([800], max_size=1333),
+            T.ToTensor(),
+            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ]
+    )
+    image, _ = transform(image_pil, None)  # 3, h, w
+    return image_pil, image
 
 
 def load_model(model_config_path, model_checkpoint_path, device):
@@ -139,6 +155,8 @@ def main():
     in_dir = os.path.join(in_dir, f'{dataset}_sparse', scene)
     out_dir = os.path.join(out_dir, f'{dataset}_sam_text', scene)
 
+    os.makedirs(out_dir, exist_ok=True)
+
     # open json
     with open(json_path, 'r') as file:
         text_params = json.load(file)
@@ -159,26 +177,27 @@ def main():
             img_path = os.path.join(in_dir, 'images_{}'.format(factor), image_filename)
 
             img = cv2.imread(img_path)
-            mask = np.zeros((image.shape[:2])).astype(np.int32)
+            img_pil_tensor, img_tensor = load_image(img_path)
+            mask = np.zeros((img.shape[:2])).astype(np.int32)
 
             for text_prompt in text_prompt_list:
 
                 # run grounding dino model
                 boxes_filt, pred_phrases = get_grounding_output(
-                    model, img, text_prompt, box_threshold, text_threshold, device=device)
+                    model, img_tensor, text_prompt, box_threshold, text_threshold, device=device)
 
                 # initialize SAM
                 predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
                 predictor.set_image(img, image_format='BGR')
 
-                H, W = image.shape[:2]
+                H, W = img.shape[:2]
                 for i in range(boxes_filt.size(0)):
                     boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
                     boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
                     boxes_filt[i][2:] += boxes_filt[i][:2]
 
                 boxes_filt = boxes_filt.cpu()
-                transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
+                transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, img.shape[:2]).to(device)
                 # print(transformed_boxes)
 
                 if len(transformed_boxes) != 0:
@@ -202,10 +221,11 @@ def main():
                     mask += masks[0][0].astype(np.int32)
 
                     save_masks(mask.copy(), mask_path)
-                    draw_masks_on_img(image.copy(), mask.copy(), img_with_mask_path)
+                    draw_masks_on_img(img.copy(), mask.copy(), img_with_mask_path)
 
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     plt.figure(figsize=(10, 10))
-                    plt.imshow(image)
+                    plt.imshow(img)
                     for box, label in zip(boxes_filt, pred_phrases):
                         # print(box, label)
                         show_box(box.numpy(), plt.gca(), label)

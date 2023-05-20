@@ -1,6 +1,6 @@
 # OR-NeRF: Object Removing from 3D Scenes Guided by Multiview Segmentation with Neural Radiance Fields
 
-[**Project**]() | [**Paper**](https://arxiv.org/abs/2305.10503)
+[**Project Page**]() | [**Paper**](https://arxiv.org/abs/2305.10503)
 
 Pytorch Implementation of OR-NeRF. OR-NeRF removes objects from 3D scenes with points or text prompts on only one image.
 

@@ -1,4 +1,46 @@
 {
+  "ibrnet_data": {
+    "qq3": {
+      "text": [
+        "lamp"
+      ],
+      "factor": 1,
+      "box_threshold": 0.3,
+      "text_threshold": 0.25
+    },
+    "qq6": {
+      "text": [
+        "book above printer"
+      ],
+      "factor": 1,
+      "box_threshold": 0.25,
+      "text_threshold": 0.25
+    },
+    "qq10": {
+      "text": [
+        "white table"
+      ],
+      "factor": 1,
+      "box_threshold": 0.25,
+      "text_threshold": 0.25
+    },
+    "qq11": {
+      "text": [
+        "statue"
+      ],
+      "factor": 1,
+      "box_threshold": 0.25,
+      "text_threshold": 0.25
+    },
+    "qq13": {
+      "text": [
+        "pool"
+      ],
+      "factor": 1,
+      "box_threshold": 0.25,
+      "text_threshold": 0.25
+    }
+  },
   "nerf_llff_data": {
     "room": {
       "text": [
@@ -106,49 +148,6 @@
       ],
       "factor": 4,
       "box_threshold": 0.3,
-      "text_threshold": 0.25
-    }
-  },
-  "ibrnet_data": {
-    "_comment": "Not good performance",
-    "qq3": {
-      "text": [
-        "lamp"
-      ],
-      "factor": 1,
-      "box_threshold": 0.3,
-      "text_threshold": 0.25
-    },
-    "qq6": {
-      "text": [
-        "book above printer"
-      ],
-      "factor": 1,
-      "box_threshold": 0.25,
-      "text_threshold": 0.25
-    },
-    "qq10": {
-      "text": [
-        "white table"
-      ],
-      "factor": 1,
-      "box_threshold": 0.25,
-      "text_threshold": 0.25
-    },
-    "qq11": {
-      "text": [
-        "statue"
-      ],
-      "factor": 1,
-      "box_threshold": 0.25,
-      "text_threshold": 0.25
-    },
-    "qq13": {
-      "text": [
-        "pool"
-      ],
-      "factor": 1,
-      "box_threshold": 0.25,
       "text_threshold": 0.25
     }
   }

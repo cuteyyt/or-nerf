@@ -10,7 +10,7 @@ set -e
 
 # SAM predict with text prompt  (use --is_test to test spinnerf, actually no effect)
 # Use hybrid to give the initial mask ONLY
-python datasets/pre_text_prompt.py \
+python datasets/run_sam_text.py \
   --in_dir "$INDIR" \
   --out_dir "$OUTDIR" \
   --dataset "$DATASET" \
