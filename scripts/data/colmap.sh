@@ -45,6 +45,7 @@ colmap mapper \
   --image_path "$DATASET_PATH"/images \
   --output_path "$DATASET_PATH"/sparse
 
+mkdir "$DATASET_PATH"/dense
 mkdir "$DATASET_PATH"/dense/0
 
 colmap image_undistorter \

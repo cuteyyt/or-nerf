@@ -3,17 +3,17 @@
 # Config params
 DATASET=$1
 SCENE=$2
-DATADIR=$3
+INDIR=$3
+OUTDIR=$4
 
 set -e
 
-# SAM predict with text prompt
+# SAM predict with text prompt  (use --is_test to test spinnerf, actually no effect)
+# Use hybrid to give the initial mask ONLY
 python datasets/pre_text_prompt.py \
-  --config prior/Grounded-Segment-Anything/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py \
-  --grounded_checkpoint ckpts/grounded_sam/groundingdino_swint_ogc.pth \
-  --sam_checkpoint ckpts/sam/sam_vit_h_4b8939.pth \
+  --in_dir "$INDIR" \
+  --out_dir "$OUTDIR" \
   --dataset "$DATASET" \
   --scene "$SCENE" \
-  --text_prompt_json configs/prepare_data/sam_text.json \
-  --device "cuda" \
+  --json_path configs/prepare_data/sam_text.json \
   --hybrid

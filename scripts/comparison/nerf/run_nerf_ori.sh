@@ -10,6 +10,11 @@ python comparison/nerf-pytorch/run_nerf.py --config configs/comparison/nerf/ori/
 python comparison/nerf-pytorch/run_nerf.py --config configs/comparison/nerf/ori/"$SCENE".txt --render_all
 
 # To run spinnerf test
-CUDA_VISIBLE_DEVICES=1 python comparison/nerf-pytorch/run_nerf.py --config configs/comparison/nerf/ori/"$SCENE".txt \
-  --datadir data/test/spinnerf_dataset_sparse/"$SCENE" \
-  --basedir ./logs/nerf/ori/test
+#python comparison/nerf-pytorch/run_nerf_test.py --config configs/comparison/nerf/ori/"$SCENE".txt \
+#  --datadir data/test/spinnerf_dataset_sparse/"$SCENE" \
+#  --basedir ./logs/test/nerf/ori
+#
+#python comparison/nerf-pytorch/run_nerf_test.py --config configs/comparison/nerf/ori/"$SCENE".txt \
+#  --datadir data/test/spinnerf_dataset_sparse/"$SCENE" \
+#  --basedir ./logs/test/nerf/ori \
+#  --render_all

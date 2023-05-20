@@ -1,9 +1,9 @@
-import torch
-from torch.utils.data import Dataset
 import glob
-import numpy as np
 import os
+
+import cv2
 from PIL import Image
+from torch.utils.data import Dataset
 from torchvision import transforms as T
 
 from .ray_utils import *
@@ -120,7 +120,8 @@ def get_spiral(c2ws_all, near_fars, rads_scale=1.0, N_views=120):
 
 
 class LLFFDataset(Dataset):
-    def __init__(self, datadir, split='train', downsample=4, is_stack=False, hold_every=8):
+    def __init__(self, datadir, split='train', downsample=4, is_stack=False, is_depth=False, is_mask=False,
+                 hold_every=8):
         """
         spheric_poses: whether the images are taken in a spheric inward-facing manner
                        default: False (forward-facing)
@@ -132,10 +133,13 @@ class LLFFDataset(Dataset):
         self.hold_every = hold_every
         self.is_stack = is_stack
         self.downsample = downsample
+        self.is_depth = is_depth
+        self.is_masks = is_mask
         self.define_transforms()
 
-        self.blender2opencv = np.eye(4)#np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+        self.blender2opencv = np.eye(4)  # np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
         self.read_meta()
+        self.read_extra(self.is_masks)
         self.white_bg = False
 
         #         self.near_far = [np.min(self.near_fars[:,0]),np.max(self.near_fars[:,1])]
@@ -145,13 +149,56 @@ class LLFFDataset(Dataset):
         self.center = torch.mean(self.scene_bbox, dim=0).float().view(1, 1, 3)
         self.invradius = 1.0 / (self.scene_bbox[1] - self.center).float().view(1, 1, 3)
 
+    def read_extra(self, is_mask):
+        img_list = list(set(np.arange(len(self.poses))))
+        self.images = []
+        self.masks = []
+        for i in img_list:
+            image_path = self.image_paths[i]
+            img = Image.open(image_path).convert('RGB')
+            if self.downsample != 1.0:
+                img = img.resize(self.img_wh, Image.LANCZOS)
+            img = self.transform(img)  # (3, h, w)
+            image = img.permute(1, 2, 0)  # (h, w, 3) RGB
+            self.images.append(image)
+
+            if is_mask:
+                mask_path = self.masks_paths[i]
+                mask = cv2.imread(mask_path, 0)
+                mask = self.transform(mask)
+                mask = mask.permute(1, 2, 0)
+                self.masks.append(mask)
+
     def read_meta(self):
 
-
+        print(self.root_dir)
         poses_bounds = np.load(os.path.join(self.root_dir, 'poses_bounds.npy'))  # (N_images, 17)
-        self.image_paths = sorted(glob.glob(os.path.join(self.root_dir, 'images_4/*')))
+        # print(poses_bounds)
+        # test = 2
+
+        if self.is_masks:
+            self.masks_paths = sorted(glob.glob(os.path.join(self.root_dir, 'labeltmux /*png')))
+
+        if "gt" in self.root_dir:
+            print("gt")
+            poses_bounds = poses_bounds[:40]
+        elif "spinnerf_dataset" in self.root_dir:
+            print("spinnerf dataset")
+            poses_bounds = poses_bounds[40:]
+
+        if self.root_dir.endswith("sparse/qq3") or self.root_dir.endswith("sparse/qq6") or self.root_dir.endswith(
+                "sparse/qq10") \
+                or self.root_dir.endswith("sparse/qq11") or self.root_dir.endswith(
+            "sparse/qq13") or self.root_dir.endswith('sam/qq3'):
+            self.image_paths = sorted(glob.glob(os.path.join(self.root_dir, 'images_1/*png')))
+        else:
+            self.image_paths = sorted(glob.glob(os.path.join(self.root_dir, 'images_4/*png')))
+        if self.is_depth:
+            self.depth_paths = sorted(glob.glob(os.path.join(self.root_dir, 'depth/*')))
         # load full resolution image then resize
         if self.split in ['train', 'test']:
+            print(len(poses_bounds))
+            print(len(self.image_paths))
             assert len(poses_bounds) == len(self.image_paths), \
                 'Mismatch between number of images and number of poses! Please rerun COLMAP!'
 
@@ -198,11 +245,54 @@ class LLFFDataset(Dataset):
         average_pose = average_poses(self.poses)
         dists = np.sum(np.square(average_pose[:3, 3] - self.poses[:, :3, 3]), -1)
         i_test = np.arange(0, self.poses.shape[0], self.hold_every)  # [np.argmin(dists)]
-        img_list = i_test if self.split != 'train' else list(set(np.arange(len(self.poses))) - set(i_test))
+        # print(i_test)
+        # img_list = i_test if self.split != 'train' else list(set(np.arange(len(self.poses))) - set(i_test))
+        if self.split == 'train':
+            img_list = list(set(np.arange(len(self.poses))) - set(i_test))
+        elif self.split == 'all':
+            img_list = list(set(np.arange(len(self.poses))))
+        else:
+            img_list = i_test
 
         # use first N_images-1 to train, the LAST is val
         self.all_rays = []
         self.all_rgbs = []
+        self.all_depth = []
+
+        # Perceptual loss initialization
+        self.same_rays = []
+        self.same_rgbs = []
+        self.all_mask = []
+        if self.is_depth:
+            for i in img_list:
+                depth_path = self.depth_paths[i]
+                # depth = Image.open(depth_path)
+                # depth = depth.convert('RGB')
+                # depth = self.transform(depth)
+                # depth = depth.view(3, -1).permute(1, 0)
+                depth = cv2.imread(depth_path, 0)  # (w, h)
+                depth = self.transform(depth)  # (1, w, h)
+                depth = depth.view(1, -1).permute(1, 0)  # (w*h, 1)
+                # print(depth.shape)
+                self.all_depth += [depth]
+            if not self.is_stack:
+                self.all_depth = torch.cat(self.all_depth, 0)  # (n*w*h, 1)
+            else:
+                self.all_depth = torch.stack(self.all_depth, 0).reshape(-1, *self.img_wh[::-1], 1)  # (n, h, w, 1)
+                # print(self.all_depth.shape)
+                # .reshape(-1,*self.img_wh[::-1], 3)
+
+        if self.is_masks:
+            for i in img_list:
+                mask_path = self.masks_paths[i]
+                mask = cv2.imread(mask_path, 0)
+                mask = self.transform(mask)
+                mask = mask.view(1, -1).permute(1, 0)
+                # print(mask.shape)
+                # print(type(self.all_mask))
+                # self.all_mask += [mask]
+                # self.all_mask = torch.stack(self.all_mask, 0).reshape(-1,*self.img_wh[::-1], 1)
+
         for i in img_list:
             image_path = self.image_paths[i]
             c2w = torch.FloatTensor(self.poses[i])
@@ -220,13 +310,48 @@ class LLFFDataset(Dataset):
 
             self.all_rays += [torch.cat([rays_o, rays_d], 1)]  # (h*w, 6)
 
-        if not self.is_stack:
-            self.all_rays = torch.cat(self.all_rays, 0) # (len(self.meta['frames])*h*w, 3)
-            self.all_rgbs = torch.cat(self.all_rgbs, 0) # (len(self.meta['frames])*h*w,3)
-        else:
-            self.all_rays = torch.stack(self.all_rays, 0)   # (len(self.meta['frames]),h,w, 3)
-            self.all_rgbs = torch.stack(self.all_rgbs, 0).reshape(-1,*self.img_wh[::-1], 3)  # (len(self.meta['frames]),h,w,3)
+            # Perceptual loss load
+            self.same_rgbs += [img]
+            self.same_rays += [torch.cat([rays_o, rays_d], 1)]
 
+        if not self.is_stack:
+            self.all_rays = torch.cat(self.all_rays, 0)  # (len(self.meta['frames])*h*w, 3)
+            self.all_rgbs = torch.cat(self.all_rgbs, 0)  # (len(self.meta['frames])*h*w,3)
+
+        else:
+            self.all_rays = torch.stack(self.all_rays, 0)  # (len(self.meta['frames]),h,w, 3)
+            self.all_rgbs = torch.stack(self.all_rgbs, 0).reshape(-1, *self.img_wh[::-1],
+                                                                  3)  # (len(self.meta['frames]),h,w,3)
+
+        self.same_rays = torch.stack(self.same_rays, 0)
+        self.same_rgbs = torch.stack(self.same_rgbs, 0).reshape(-1, *self.img_wh[::-1], 3)
+
+    def get_same_rays(self):
+        i_test = np.arange(0, self.poses.shape[0], self.hold_every)  # [np.argmin(dists)]
+        if self.split == 'train':
+            img_list = list(set(np.arange(len(self.poses))) - set(i_test))
+        elif self.split == 'all':
+            img_list = list(set(np.arange(len(self.poses))))
+        else:
+            img_list = i_test
+
+        np.random.shuffle(img_list)
+        img_list = img_list[:4]
+        W, H = self.img_wh
+        batch_rays, targets = list(), list()
+        return img_list, H, W
+
+    def cal_box(self, mask):
+        # (h, w, 1)
+        # print(mask.shape)
+        x_coords, y_coords = np.nonzero(mask[:, :, 0]).split([1, 1], dim=1)
+        x_coords = torch.squeeze(x_coords)
+        y_coords = torch.squeeze(y_coords)
+        x_min, y_min = torch.min(x_coords), torch.min(y_coords)
+        x_max, y_max = torch.max(x_coords), torch.max(y_coords)
+        # print(np.asarray([x_min, y_min, x_max, y_max]))
+
+        return np.asarray([x_min, y_min, x_max, y_max])
 
     def define_transforms(self):
         self.transform = T.ToTensor()
@@ -237,6 +362,14 @@ class LLFFDataset(Dataset):
     def __getitem__(self, idx):
 
         sample = {'rays': self.all_rays[idx],
-                  'rgbs': self.all_rgbs[idx]}
+                  'rgbs': self.all_rgbs[idx],
+                  }
 
         return sample
+
+    # def  get_same(self, idx):
+    #     sample = {
+    #         'rays': self.same_rays[idx], #(h, w, 3)
+    #         'rgbs': self.same_rgbs[idx] #(h, w, 3)
+    #     }
+    #     return sample

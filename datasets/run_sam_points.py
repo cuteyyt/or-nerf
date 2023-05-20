@@ -11,6 +11,7 @@ from subprocess import check_output
 
 import cv2
 import numpy as np
+from scipy import ndimage
 from segment_anything import sam_model_registry, SamPredictor
 from tqdm import tqdm
 
@@ -385,6 +386,24 @@ def read_json(json_path, dataset_name, scene_name):
     return res
 
 
+def sample_points_from_mask(mask, ):
+    box = np.nonzero(mask[:, :, 0])
+
+    mask_binary = np.zeros(mask.shape[:2], dtype=np.int32)
+    mask_binary[mask[:, :, 0] == 255] = 1
+
+    centre = ndimage.center_of_mass(mask_binary)
+
+    points = [
+        [box[1][0], box[0][0]],
+        [int(centre[1]), int(centre[0])],
+        [box[1][-1], box[0][-1]],
+    ]
+
+    points = np.asarray(points)
+    return points
+
+
 # noinspection PyPep8Naming
 def post_sam(args, ):
     # Args
@@ -392,9 +411,16 @@ def post_sam(args, ):
     dataset_name, scene_name = args.dataset_name, args.scene_name
     json_path = args.json_path
     model_type, ckpt_path, device_type = args.model_type, args.ckpt_path, args.device_type
+    text_prompt, is_test = args.text_prompt, args.is_test
 
     # Read params from json
     opt = read_json(json_path, dataset_name, scene_name)
+    if args.text_prompt:
+        text_mask_dir = os.path.join(out_dir, f'{dataset_name}_sam_text', f'{scene_name}', 'masks')
+        text_mask_path = sorted([os.path.join(text_mask_dir, f) for f in os.listdir(text_mask_dir)])[0]
+        mask = cv2.imread(text_mask_path)
+        opt['init_points'] = sample_points_from_mask(mask)
+        opt['init_labels'] = np.ones(len(opt['init_points']), dtype=np.int32)
 
     # Register related paths
     in_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name)
@@ -403,7 +429,10 @@ def post_sam(args, ):
     in_cam_dir = os.path.join(in_dir, 'sparse/0')
 
     # Copy cam params to sam folder
-    out_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name)
+    if text_prompt:
+        out_dir = os.path.join(out_dir, f'{dataset_name}_sam_text', scene_name)
+    else:
+        out_dir = os.path.join(out_dir, f'{dataset_name}_sam', scene_name)
     os.makedirs(out_dir, exist_ok=True)
 
     shutil.copy(os.path.join(in_dir, 'poses_bounds.npy'), os.path.join(out_dir, 'poses_bounds.npy'))
@@ -419,6 +448,9 @@ def post_sam(args, ):
 
     img_names = [images[k].name for k in images]
     img_names = np.sort(img_names)
+
+    if is_test:
+        img_names = img_names[40:]
 
     # img_paths = [os.path.join(in_imgs_dir, path) for path in os.listdir(in_imgs_dir) if path.endswith(img_file_type)]
     img_paths = [os.path.join(in_imgs_dir, f) for f in img_names]
@@ -466,6 +498,9 @@ def parse():
     parser.add_argument('--device_type', type=str, default='cuda', choices=['cuda'], help='device')
 
     parser.add_argument('--json_path', type=str, default='configs/prepare_data/sam_points.json')
+
+    parser.add_argument('--text_prompt', action='store_true')
+    parser.add_argument('--is_test', action='store_true')
 
     args = parser.parse_args()
 

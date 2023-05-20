@@ -8,7 +8,18 @@ OUTDIR=$4
 
 set -e
 
-SFX=sam
+SFX=depth # set to SFX=depth to enable depth inpainting
+LOGDIR=logs/nerf/ori/"$SCENE"/render_all_200000_depth
+# Post-process for network training
+python datasets/pre_depth.py \
+  --log_dir "$LOGDIR" \
+  --in_dir "$INDIR" \
+  --out_dir "$OUTDIR" \
+  --dataset_name "$DATASET" \
+  --scene_name "$SCENE" \
+  --json_path configs/prepare_data/lama.json \
+  --sfx "$SFX"
+
 # Lama dataset preparation
 python datasets/pre_lama.py \
   --in_dir "$INDIR" \
@@ -16,7 +27,7 @@ python datasets/pre_lama.py \
   --dataset_name "$DATASET" \
   --scene_name "$SCENE" \
   --json_path configs/prepare_data/lama.json \
-  --sfx "$SFX"
+  --sfx "$SFX" --is_depth
 
 # Lama inpainting
 cd prior/lama
@@ -38,4 +49,4 @@ python datasets/post_lama.py \
   --dataset_name "$DATASET" \
   --scene_name "$SCENE" \
   --json_path configs/prepare_data/lama.json \
-  --sfx "$SFX"
+  --sfx "$SFX" --is_depth

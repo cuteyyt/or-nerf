@@ -35,7 +35,7 @@ def pose_spherical(theta, phi, radius):
 
 class NSVF(Dataset):
     """NSVF Generic Dataset."""
-    def __init__(self, datadir, split='train', downsample=1.0, wh=[800,800], is_stack=False):
+    def __init__(self, datadir, split='train', downsample=1.0, wh=[800,800], is_stack=False, is_depth=False, is_mask=False,):
         self.root_dir = datadir
         self.split = split
         self.is_stack = is_stack

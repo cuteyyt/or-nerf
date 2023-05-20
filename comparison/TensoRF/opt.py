@@ -28,6 +28,8 @@ def config_parser(cmd=None):
 
     parser.add_argument('--dataset_name', type=str, default='blender',
                         choices=['blender', 'llff', 'nsvf', 'dtu','tankstemple', 'own_data'])
+    parser.add_argument('--depth', action='store_true', help='Training with depth')
+    parser.add_argument('--lpips', action='store_true', help='Training with lpips')
 
 
     # training options
@@ -54,6 +56,10 @@ def config_parser(cmd=None):
                         help='loss weight')
     parser.add_argument("--TV_weight_app", type=float, default=0.0,
                         help='loss weight')
+    parser.add_argument("--Depth_loss_weight", type=float, default=0.0,
+                        help="loss weight")
+    parser.add_argument("--Lpips_loss_weight", type=float, default=0.0,
+                        help="loss weight")
     
     # model
     # volume options
@@ -91,6 +97,7 @@ def config_parser(cmd=None):
     parser.add_argument("--render_test", type=int, default=0)
     parser.add_argument("--render_train", type=int, default=0)
     parser.add_argument("--render_path", type=int, default=0)
+    parser.add_argument("--render_all", type=int, default=0)
     parser.add_argument("--export_mesh", type=int, default=0)
 
     # rendering options

@@ -2,32 +2,34 @@
 
 # Params
 SCRIPT=$1
+INDIR=$2
+OUTDIR=$3
 set -e
 
 # ibrnet_data
-sh "$SCRIPT" ibrnet_data qq3 data
-sh "$SCRIPT" ibrnet_data qq6 data
-sh "$SCRIPT" ibrnet_data qq10 data
-sh "$SCRIPT" ibrnet_data qq11 data
-sh "$SCRIPT" ibrnet_data qq13 data
-sh "$SCRIPT" ibrnet_data qq16 data
-sh "$SCRIPT" ibrnet_data qq17 data
-sh "$SCRIPT" ibrnet_data qq21 data
+sh "$SCRIPT" ibrnet_data qq3 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" ibrnet_data qq6 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" ibrnet_data qq10 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" ibrnet_data qq11 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" ibrnet_data qq13 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" ibrnet_data qq16 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" ibrnet_data qq17 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" ibrnet_data qq21 "$INDIR" "$OUTDIR"
 
 # llff_real_iconic
-sh "$SCRIPT" llff_real_iconic data5_piano data
+sh "$SCRIPT" llff_real_iconic data5_piano "$INDIR" "$OUTDIR"
 
 # nerf_llff_data
-sh "$SCRIPT" nerf_llff_data room data
-sh "$SCRIPT" nerf_llff_data horns data
-sh "$SCRIPT" nerf_llff_data fortress data
+sh "$SCRIPT" nerf_llff_data room "$INDIR" "$OUTDIR"
+sh "$SCRIPT" nerf_llff_data horns "$INDIR" "$OUTDIR"
+sh "$SCRIPT" nerf_llff_data fortress "$INDIR" "$OUTDIR"
 
 # spinnerf_dataset
-sh "$SCRIPT" spinnerf_dataset 2 data
-sh "$SCRIPT" spinnerf_dataset 3 data
-sh "$SCRIPT" spinnerf_dataset 4 data
-sh "$SCRIPT" spinnerf_dataset 7 data
-sh "$SCRIPT" spinnerf_dataset 10 data
-sh "$SCRIPT" spinnerf_dataset 12 data
-sh "$SCRIPT" spinnerf_dataset book data
-sh "$SCRIPT" spinnerf_dataset trash data
+sh "$SCRIPT" spinnerf_dataset 2 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" spinnerf_dataset 3 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" spinnerf_dataset 4 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" spinnerf_dataset 7 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" spinnerf_dataset 10 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" spinnerf_dataset 12 "$INDIR" "$OUTDIR"
+sh "$SCRIPT" spinnerf_dataset book "$INDIR" "$OUTDIR"
+sh "$SCRIPT" spinnerf_dataset trash "$INDIR" "$OUTDIR"

@@ -87,8 +87,14 @@ def imread(f):
         return imageio.imread(f)
 
 
-def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
+def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True, render_gt=False):
     poses_arr = np.load(os.path.join(basedir, 'poses_bounds.npy'))
+    if 'test' in basedir:
+        if render_gt:
+            poses_arr = poses_arr[:60]
+        else:
+            poses_arr = poses_arr[40:]
+
     poses = poses_arr[:, :-2].reshape([-1, 3, 5]).transpose([1, 2, 0])
     bds = poses_arr[:, -2:].transpose([1, 0])
 
@@ -259,8 +265,9 @@ def spherify_poses(poses, bds):
     return poses_reset, new_poses, bds
 
 
-def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=False, path_zflat=False):
-    poses, bds, imgs, depths, masks = _load_data(basedir, factor=factor)  # factor=8 downsamples original imgs by 8x
+def load_llff_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=False, path_zflat=False, render_gt=False):
+    poses, bds, imgs, depths, masks = _load_data(basedir, factor=factor, render_gt=render_gt)
+    # factor=8 downsamples original imgs by 8x
     print('Loaded', basedir, bds.min(), bds.max())
 
     # Correct rotation matrix ordering and move variable dim to axis 0

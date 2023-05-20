@@ -13,7 +13,7 @@ from tqdm import tqdm, trange
 
 from load_blender import load_blender_data
 from load_dtu import load_dtu_data
-from load_llff import load_llff_data, load_colmap_depth
+from load_llff_test import load_llff_data, load_colmap_depth
 from load_nerd import load_nerd_data
 from loss import SigmaLoss
 from run_nerf_helpers import *
@@ -910,6 +910,7 @@ def config_parser():
                         help='The number of patches used in each iteration for the perceptual loss')
 
     parser.add_argument("--render_all", action="store_true")
+    parser.add_argument("--render_gt", action="store_true")
 
     return parser
 
@@ -953,6 +954,9 @@ def train():
     parser = config_parser()
     args = parser.parse_args()
 
+    args.colmap_depth = False
+    args.depth_loss = False
+
     gnrt_losses = []
     disc_losses = []
 
@@ -967,7 +971,7 @@ def train():
     if args.dataset_type == 'llff':
         if args.colmap_depth:
             depth_gts = load_colmap_depth(
-                args.datadir, factor=args.factor, bd_factor=.75, prepare=args.prepare)
+                args.datadir, factor=args.factor, bd_factor=.75, prepare=args.prepare, args=args)
         images, poses, bds, render_poses, i_test, masks, inpainted_depths, mask_indices = load_llff_data(args.datadir,
                                                                                                          args.factor,
                                                                                                          recenter=True,
@@ -1211,14 +1215,18 @@ def train():
     if args.render_all:
         print('RENDER ALL')
         with torch.no_grad():
+            if args.render_gt:  # render gts
+                poses = poses[:40]
+                out_dirs = f'{basedir}/{expname}/render_test'
+            else:
+                out_dirs = f'{basedir}/{expname}/render_all'
+
             poses = torch.Tensor(poses).to(device)
             rgbs, disps, _ = render_path(poses, hwf, args.chunk, render_kwargs_test, gt_imgs=None,
                                          render_factor=args.render_factor)
 
-            out_dirs = f'{basedir}/{expname}/render_all'
-            out_disps_dirs = f'{basedir}/{expname}/render_all_disp'
-
             os.makedirs(out_dirs, exist_ok=True)
+            out_disps_dirs = f'{out_dirs}_disp'
             os.makedirs(out_disps_dirs, exist_ok=True)
 
             for _ in range(len(poses[40:])):

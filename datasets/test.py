@@ -7,12 +7,13 @@ import os
 
 import cv2
 import numpy as np
+import pyiqa
 from skimage.metrics import peak_signal_noise_ratio as compare_psnr
 from tqdm import tqdm
 
 
 def cal_psnr(pred, target):
-    psnr = compare_psnr(target, pred)
+    psnr = compare_psnr(target, pred, data_range=256)
     return psnr
 
 
@@ -20,9 +21,12 @@ def test_render(pred_dir, target_dir):
     in_paths = [os.path.join(pred_dir, f) for f in sorted(os.listdir(pred_dir)) if f.endswith('png')]
     target_paths = [os.path.join(target_dir, f) for f in sorted(os.listdir(target_dir)) if f.endswith('png')]
 
+    lpips_metric = pyiqa.create_metric('lpips', device='cpu')
+
     # Cal pixel-wise accuracy and iou for each img
-    print(f'Test psnr for {target_dir}')
+    print(f'Test psnr&fid&lpips for {target_dir}')
     psnr_all = list()
+    lpips_all = list()
     with tqdm(total=len(in_paths)) as p_bar:
         for (in_path, target_path) in zip(in_paths, target_paths):
             pred = cv2.imread(in_path)
@@ -31,14 +35,27 @@ def test_render(pred_dir, target_dir):
             psnr = cal_psnr(pred, target)
             psnr_all.append(psnr)
 
+            lpips = lpips_metric(in_path, target_path)
+            lpips_all.append(lpips)
+
             p_bar.update()
 
     with open(os.path.join(pred_dir, 'test_results.txt'), 'w') as f:
-        for i, psnr in enumerate(psnr_all):
+        for i, (psnr, lpips) in enumerate(zip(psnr_all, lpips_all)):
             f.write('img {}: psnr {:.3f}\n'.format(in_paths[i], psnr))
+            f.write('img {}: lpips {:.5f}\n'.format(in_paths[i], lpips))
+
+        f.write('scene: psnr {:.3f}'.format(sum(psnr_all) / len(psnr_all)))
+        f.write('scene: lpips {:.5f}'.format(sum(lpips_all) / len(lpips_all)))
+
+        fid_metric = pyiqa.create_metric('fid')
+        fid_score = fid_metric(pred_dir, target_dir)
+        f.write('scene: fid {:.3f}'.format(fid_score))
 
         print('scene: psnr {:.2f}'.format(sum(psnr_all) / len(psnr_all)))
-        f.write('scene: psnr {:.3f}'.format(sum(psnr_all) / len(psnr_all)))
+        print('scene: fid {:.2f}'.format(fid_score))
+        print('scene: lpips {:.4f}'.format(sum(lpips_all) / len(lpips_all)))
+
         f.close()
 
 

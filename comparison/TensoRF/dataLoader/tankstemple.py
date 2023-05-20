@@ -85,7 +85,7 @@ def gen_path(pos_gen, at=(0, 0, 0), up=(0, -1, 0), frames=180):
 
 class TanksTempleDataset(Dataset):
     """NSVF Generic Dataset."""
-    def __init__(self, datadir, split='train', downsample=1.0, wh=[1920,1080], is_stack=False):
+    def __init__(self, datadir, split='train', downsample=1.0, wh=[1920,1080], is_stack=False, is_depth=False, is_mask=False):
         self.root_dir = datadir
         self.split = split
         self.is_stack = is_stack

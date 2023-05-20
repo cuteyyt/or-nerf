@@ -65,6 +65,10 @@ def _minify(basedir, factors=[], resolutions=[]):
 def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True, prepare=False, refined=False,
                use_MVSeg=False, args=None):
     poses_arr = np.load(os.path.join(basedir, 'poses_bounds.npy'))
+    if args.render_gt:
+        poses_arr = poses_arr[:60]
+    else:
+        poses_arr = poses_arr[40:]
 
     # 3 x 5 x N
     poses = poses_arr[:, :-2].reshape([-1, 3, 5]).transpose([1, 2, 0])
@@ -446,7 +450,7 @@ def get_poses(images):
     return np.array(poses)
 
 
-def load_colmap_depth(basedir, factor=8, bd_factor=.75, prepare=False):
+def load_colmap_depth(basedir, factor=8, bd_factor=.75, prepare=False, args=None):
     data_file = Path(basedir) / 'colmap_depth.npy'
 
     images = read_images_binary(Path(basedir) / 'sparse' / '0' / 'images.bin')
@@ -460,7 +464,7 @@ def load_colmap_depth(basedir, factor=8, bd_factor=.75, prepare=False):
     poses = get_poses(images)
     # factor=8 downsamples original imgs by 8x
     _, bds_raw, _, _, _, _ = _load_data(
-        basedir, factor=factor, prepare=prepare)
+        basedir, factor=factor, prepare=prepare, args=args)
     bds_raw = np.moveaxis(bds_raw, -1, 0).astype(np.float32)
     # print(bds_raw.shape)
     # Rescale if bd_factor is provided

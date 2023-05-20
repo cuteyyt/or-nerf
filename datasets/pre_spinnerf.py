@@ -6,7 +6,7 @@ import json
 import os
 from subprocess import check_output
 
-from pre_nerf import parse
+from pre_sparse import parse
 
 
 def main():
@@ -14,6 +14,7 @@ def main():
     in_dir, out_dir = args.in_dir, args.out_dir
     dataset_name, scene_name = args.dataset_name, args.scene_name
     json_path = args.json_path
+    is_test = args.is_test
 
     # Read refine params from json path
     with open(json_path, 'r') as file:

@@ -115,7 +115,7 @@ The video would be stored in the experiment directory.
 
 <!-- - to only compute the evaluation metrics:
 ```
-python run_nerf.py --config configs/fern_dsnerf.txt --eval
+python run_nerf_depth.py --config configs/fern_dsnerf.txt --eval
 ``` -->
 
 

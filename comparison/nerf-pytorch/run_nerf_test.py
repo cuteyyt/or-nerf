@@ -1,19 +1,17 @@
 import os
 import time
-from pathlib import Path
 
 import cv2
 import imageio
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from load_llff import load_llff_data
+from load_llff_test import load_llff_data
 from run_nerf_helpers import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 np.random.seed(0)
 DEBUG = False
-adversarial_loss = torch.nn.BCELoss()
 
 
 def batchify(fn, chunk):
@@ -163,9 +161,9 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
             filename = os.path.join(savedir, '{:03d}.png'.format(i))
             imageio.imwrite(filename, rgb8)
 
-            depth8 = depths[-1]
-            filename_depth = os.path.join(f'{savedir}_depth', '{:03d}.npy'.format(i))
-            np.save(filename_depth, depth8)
+            # depth8 = depths[-1]
+            # filename_depth = os.path.join(f'{savedir}_depth', '{:03d}.npy'.format(i))
+            # np.save(filename_depth, depth8)
 
     rgbs = np.stack(rgbs, 0)
     disps = np.stack(disps, 0)
@@ -197,9 +195,6 @@ def create_nerf(args):
                           input_ch_views=input_ch_views, use_viewdirs=args.use_viewdirs).to(device)
         grad_vars += list(model_fine.parameters())
 
-    discriminator = PixelDiscriminator().to(device)
-    grad_vars_d = list(discriminator.parameters())
-
     network_query_fn = lambda inputs, viewdirs, network_fn: run_network(inputs, viewdirs, network_fn,
                                                                         embed_fn=embed_fn,
                                                                         embeddirs_fn=embeddirs_fn,
@@ -207,7 +202,6 @@ def create_nerf(args):
 
     # Create optimizer
     optimizer = torch.optim.Adam(params=grad_vars, lr=args.lrate, betas=(0.9, 0.999))
-    optimizer_d = torch.optim.Adam(params=grad_vars_d, lr=args.lrate, betas=(0.9, 0.999))
 
     start = 0
     basedir = args.basedir
@@ -228,18 +222,13 @@ def create_nerf(args):
         print('Reloading from', ckpt_path)
         ckpt = torch.load(ckpt_path)
 
-        ckpt_d = torch.load(f'{Path(ckpt_path).parent}/discriminator/{Path(ckpt_path).name.replace(".", "_d.")}')
-
         start = ckpt['global_step']
         optimizer.load_state_dict(ckpt['optimizer_state_dict'])
-        optimizer_d.load_state_dict(ckpt_d['optimizer_d_state_dict'])
 
         # Load model
         model.load_state_dict(ckpt['network_fn_state_dict'])
         if model_fine is not None:
             model_fine.load_state_dict(ckpt['network_fine_state_dict'])
-
-        discriminator.load_state_dict(ckpt_d['discriminator_state_dict'])
 
     ##########################
 
@@ -265,7 +254,7 @@ def create_nerf(args):
     render_kwargs_test['perturb'] = False
     render_kwargs_test['raw_noise_std'] = 0.
 
-    return render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer, grad_vars_d, optimizer_d, discriminator
+    return render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer
 
 
 def raw2outputs(raw, z_vals, rays_d, raw_noise_std=0, white_bkgd=False, pytest=False):
@@ -547,75 +536,22 @@ def config_parser():
 
     parser.add_argument("--render_all", action="store_true",
                         help='render all views\' rgb and depth results')
-    parser.add_argument("--mode", choices=['depth_all', 'depth_partial', 'depth_dynamic'], default='depth_dynamic',
-                        help='training mode, '
-                             'depth_all: all depth used as supervision'
-                             'depth_partial: only masked area depth used as supervision'
-                             'depth_dynamic: learn a dynamic loss weight for the mask region')
 
     return parser
-
-
-def discriminator_loss(mask_indices, non_mask_indices, pred_values, pred_gt, args, ):
-    if len(mask_indices) > 0:
-        pred_gt_mask = pred_gt[mask_indices]
-        pred_values_mask = pred_values[mask_indices]
-
-        label_gt_mask = torch.ones_like(pred_gt_mask, dtype=torch.float32)
-        label_values_mask = torch.zeros_like(pred_values_mask, dtype=torch.float32)
-
-        d_loss = adversarial_loss(pred_gt_mask, label_gt_mask) + \
-                 adversarial_loss(pred_values_mask, label_values_mask)
-    else:
-        d_loss = torch.tensor(0.0).cuda().float()
-
-    return d_loss
-
-
-def nerf_loss(mask_indices, rgb, target_s, depth, t_depth, pred_values, ):
-    # Focus on mask area for adversarial part
-
-    # Image loss
-    img_loss = img2mse(rgb, target_s)
-    psnr = mse2psnr(img_loss)
-
-    # Depth loss, only depths in the mask region are supervised
-    if len(mask_indices) > 0:
-        depth_loss = img2mse(depth, t_depth[:, 0])
-    else:
-        depth_loss = torch.tensor(0.0).cuda().float()
-
-    # Generator loss, only consider the mask area
-    if len(mask_indices) > 0:
-        pred_values_mask = pred_values[mask_indices]
-        label_values_mask = torch.ones_like(pred_values_mask, dtype=torch.float32)
-        g_loss = adversarial_loss(pred_values_mask, label_values_mask)
-    else:
-        g_loss = torch.tensor(0.0).cuda().float()
-
-    loss = img_loss + depth_loss + g_loss
-
-    return loss, img_loss, depth_loss, g_loss, psnr
 
 
 def train():
     parser = config_parser()
     args = parser.parse_args()
-    assert args.mode in ['depth_all', 'depth_partial', 'depth_dynamic'], f'Unimplemented mode {args.mode}'
-    args.basedir = os.path.join(args.basedir, args.mode)
 
     # Load data
     K = None
-    images, depths_, masks, poses, bds, render_poses, i_test = load_llff_data(args.datadir, args.factor,
-                                                                              recenter=True, bd_factor=.75,
-                                                                              spherify=args.spherify)
+    images, poses, bds, render_poses, i_test = load_llff_data(args.datadir, args.factor,
+                                                              recenter=True, bd_factor=.75,
+                                                              spherify=args.spherify)
     hwf = poses[0, :3, -1]
     poses = poses[:, :3, :4]
-    print('Loaded llff:')
-    print(images.shape, depths_.shape, masks.shape, render_poses.shape, )
-    print(hwf)
-    print(args.datadir)
-
+    print('Loaded llff', images.shape, render_poses.shape, hwf, args.datadir)
     if not isinstance(i_test, list):
         i_test = [i_test]
 
@@ -667,8 +603,7 @@ def train():
             file.write(open(args.config, 'r').read())
 
     # Create nerf model
-    render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer, grad_vars_d, optimizer_d, discriminator = \
-        create_nerf(args)
+    render_kwargs_train, render_kwargs_test, start, grad_vars, optimizer = create_nerf(args)
     # global_step = start
 
     bds_dict = {
@@ -705,10 +640,14 @@ def train():
 
             return
 
+    # Short circuit for render all views' rgb and depth
     if args.render_all:
         print('RENDER ALL')
         with torch.no_grad():
-            savedir = os.path.join(basedir, expname, 'render_all_{:06d}'.format(start))
+            if 'gt' in args.datadir:  # Render gt poses
+                savedir = os.path.join(basedir, expname, 'render_test_{:06d}'.format(start))
+            else:  # Render all training poses
+                savedir = os.path.join(basedir, expname, 'render_all_{:06d}'.format(start))
 
             os.makedirs(savedir, exist_ok=True)
             os.makedirs(f'{savedir}_depth', exist_ok=True)
@@ -742,12 +681,10 @@ def train():
         print('get rays')
         rays = np.stack([get_rays_np(H, W, K, p) for p in poses[:, :3, :4]], 0)  # [N, ro+rd, H, W, 3]
         print('done, concats')
-        depths_ = np.concatenate([depths_, depths_, depths_], -1)
-        masks = np.concatenate([masks, masks, masks], -1)
-        rays_rgb = np.concatenate([rays, images[:, None], depths_[:, None], masks[:, None]], 1)  # [N, _, H, W, 3]
+        rays_rgb = np.concatenate([rays, images[:, None]], 1)  # [N, ro+rd+rgb, H, W, 3]
         rays_rgb = np.transpose(rays_rgb, [0, 2, 3, 1, 4])  # [N, H, W, ro+rd+rgb, 3]
         rays_rgb = np.stack([rays_rgb[i] for i in i_train], 0)  # train images only
-        rays_rgb = np.reshape(rays_rgb, [-1, 5, 3])  # [(N-1)*H*W, ro+rd+rgb, 3]
+        rays_rgb = np.reshape(rays_rgb, [-1, 3, 3])  # [(N-1)*H*W, ro+rd+rgb, 3]
         rays_rgb = rays_rgb.astype(np.float32)
         print('shuffle rays')
         np.random.shuffle(rays_rgb)
@@ -758,8 +695,6 @@ def train():
     # Move training data to GPU
     if use_batching:
         images = torch.Tensor(images).to(device)
-        depths_ = torch.Tensor(depths_).to(device)
-        masks = torch.Tensor(masks).to(device)
     poses = torch.Tensor(poses).to(device)
     if use_batching:
         rays_rgb = torch.Tensor(rays_rgb).to(device)
@@ -784,7 +719,7 @@ def train():
                 # Random over all images
                 batch = rays_rgb[i_batch:i_batch + N_rand]  # [B, 2+1, 3*?]
                 batch = torch.transpose(batch, 0, 1)
-                batch_rays, target_s, t_depth, t_mask = batch[:2], batch[2], batch[3], batch[4]
+                batch_rays, target_s = batch[:2], batch[2]
 
                 i_batch += N_rand
                 if i_batch >= rays_rgb.shape[0]:
@@ -799,9 +734,6 @@ def train():
                 target = images[img_i]
                 target = torch.Tensor(target).to(device)
                 pose = poses[img_i, :3, :4]
-
-                target_depth = depths_[img_i]
-                target_mask = masks[img_i]
 
                 if N_rand is not None:
                     rays_o, rays_d = get_rays(H, W, K, torch.Tensor(pose))  # (H, W, 3), (H, W, 3)
@@ -828,59 +760,26 @@ def train():
                     rays_d = rays_d[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
                     batch_rays = torch.stack([rays_o, rays_d], 0)
                     target_s = target[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
-                    t_depth = target_depth[select_coords[:, 0], select_coords[:, 1]]
-                    t_mask = target_mask[select_coords[:, 0], select_coords[:, 1]]
 
             #####  Core optimization loop  #####
             rgb, disp, acc, depth, extras = render(H, W, K, chunk=args.chunk, rays=batch_rays,
                                                    verbose=i < 10, retraw=True,
                                                    **render_kwargs_train)
 
-            pred_gt = discriminator(target_s, t_depth[:, 0][:, None])
-            pred_values = discriminator(rgb, depth[:, None])
-            if 'rgb0' in extras:
-                pred_values0 = discriminator(extras['rgb0'], extras['depth0'][:, None])
-
-            mask_indices = torch.nonzero(t_mask[:, 0] == 1, as_tuple=False)[:, 0]
-            non_mask_indices = torch.nonzero(t_mask[:, 0] == 0, as_tuple=False)[:, 0]
-            # assert len(mask_indices) + len(non_mask_indices) == args.N_rand
-
-            # Train Generator
             optimizer.zero_grad()
-            loss, img_loss, depth_loss, g_loss, psnr = \
-                nerf_loss(mask_indices, rgb, target_s, depth, t_depth, pred_values)
+            img_loss = img2mse(rgb, target_s)
+            img_loss_value = img_loss.item()
+            trans = extras['raw'][..., -1]
+            loss = img_loss
+            psnr = mse2psnr(img_loss)
 
             if 'rgb0' in extras:
-                loss0, img_loss0, depth_loss0, g_loss0, psnr0 = \
-                    nerf_loss(mask_indices, extras['rgb0'], target_s, extras['depth0'], t_depth, pred_values0)
-
-                loss = loss + loss0
-                img_loss += img_loss0
-                depth_loss += depth_loss0
-                g_loss += g_loss0
+                img_loss0 = img2mse(extras['rgb0'], target_s)
+                loss = loss + img_loss0
+                psnr0 = mse2psnr(img_loss0)
 
             loss.backward()
             optimizer.step()
-
-            # Train Discriminator
-            discriminator.train()
-            optimizer_d.zero_grad()
-
-            rgb, disp, acc, depth = rgb.detach(), disp.detach(), acc.detach(), depth.detach()
-            if 'rgb0' in extras:
-                rgb0, depth0 = extras['rgb0'].detach(), extras['depth0'].detach()
-
-            pred_gt = discriminator(target_s, t_depth[:, 0][:, None])
-            pred_values = discriminator(rgb, depth[:, None])
-            pred_values0 = discriminator(rgb0, depth0[:, None])
-
-            d_loss = discriminator_loss(mask_indices, non_mask_indices, pred_values, pred_gt, args, )
-            if 'rgb0' in extras:
-                d_loss0 = discriminator_loss(mask_indices, non_mask_indices, pred_values0, pred_gt, args, )
-                d_loss = d_loss + d_loss0
-
-            d_loss.backward()
-            optimizer_d.step()
 
             # NOTE: IMPORTANT!
             ###   update learning rate   ###
@@ -889,8 +788,6 @@ def train():
             new_lrate = args.lrate * (decay_rate ** (global_step / decay_steps))
             for param_group in optimizer.param_groups:
                 param_group['lr'] = new_lrate
-            for param_group_d in optimizer_d.param_groups:
-                param_group_d['lr'] = new_lrate
             ################################
 
             dt = time.time() - time0
@@ -906,32 +803,21 @@ def train():
                     'network_fine_state_dict': render_kwargs_train['network_fine'].state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                 }, path)
-
-                path_d = os.path.join(basedir, expname, 'discriminator', '{:06d}_d.tar'.format(i))
-                os.makedirs(os.path.join(basedir, expname, 'discriminator'), exist_ok=True)
-                torch.save({
-                    'global_step': global_step,
-                    'discriminator_state_dict': discriminator.state_dict(),
-                    'optimizer_d_state_dict': optimizer_d.state_dict(),
-                }, path_d)
-
                 print('Saved checkpoints at', path)
 
             if i % args.i_print == 0:
-                p_bar.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  Loss_D: {d_loss.item()}, PSNR: {psnr.item()}")
+                p_bar.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
 
                 # print(expname, i, psnr.numpy(), loss.numpy(), global_step.numpy())
                 # print('iter time {:.05f}'.format(dt))
 
                 logger.add_scalar('train/loss', loss, global_step)
 
-                logger.add_scalar('train/loss_img', img_loss, global_step)
-                logger.add_scalar('train/loss_depth', depth_loss, global_step)
-                logger.add_scalar('train/loss_g', g_loss, global_step)
-                logger.add_scalar('train/loss_d', d_loss, global_step)
-
+                logger.add_scalar('train/loss_fine', img_loss_value, global_step)
                 logger.add_scalar('train/psnr_fine', psnr, global_step)
+                # logger.add_histogram('tran', trans)
                 if args.N_importance > 0:
+                    logger.add_scalar('train/loss_coarse', img_loss0, global_step)
                     logger.add_scalar('train/psnr_coarse', psnr0, global_step)
 
             if i % args.i_img == 0:
@@ -939,37 +825,19 @@ def train():
                 # Log a rendered validation view to Tensorboard
                 img_i = np.random.choice(i_val)
                 target = images[img_i]
-                target_depth = depths_[img_i]
-                target_mask = masks[img_i]
                 pose = poses[img_i, :3, :4]
                 with torch.no_grad():
                     rgb, disp, acc, depth, extras = render(H, W, K, chunk=args.chunk, c2w=pose,
                                                            **render_kwargs_test)
 
-                    pred_gt = discriminator(target, target_depth[..., 0][..., None])
-                    pred_values = discriminator(rgb, depth[..., None])
-
-                    # print(pred_gt.shape, pred_values.shape)
-
-                    pred_gt = pred_gt.detach().cpu().numpy()
-                    pred_values = pred_values.detach().cpu().numpy()
-
-                    pred_gt = cv2.applyColorMap(to8b(pred_gt), cv2.COLORMAP_HOT)
-                    pred_values = cv2.applyColorMap(to8b(pred_values), cv2.COLORMAP_HOT)
-
-                    logger.add_image('val/d_heat_gt', pred_gt, global_step, dataformats='HWC')
-                    logger.add_image('val/d_heat_values', pred_values, global_step, dataformats='HWC')
-
                 psnr = mse2psnr(img2mse(rgb, target))
 
                 logger.add_image('val/rgb_fine', rgb, global_step, dataformats='HWC')
                 logger.add_image('val/depth_fine', depth[..., None], global_step, dataformats='HWC')
+                # logger.add_image('val/acc', acc, global_step, dataformats='HWC')
 
                 logger.add_scalar('val/psnr_fine', psnr, global_step)
-
                 logger.add_image('val/rgb_gt', target, global_step, dataformats='HWC')
-                logger.add_image('val/depth_gt', target_depth, global_step, dataformats='HWC')
-                logger.add_image('val/mask_gt', target_mask, global_step, dataformats='HWC')
 
                 if args.N_importance > 0:
                     rgb0 = extras['rgb0']
@@ -979,12 +847,6 @@ def train():
                     logger.add_scalar('val/psnr_coarse', psnr0, global_step)
                     logger.add_image('val/rgb_coarse', rgb0, global_step, dataformats='HWC')
                     logger.add_image('val/depth_coarse', depth0[..., None], global_step, dataformats='HWC')
-
-                    with torch.no_grad():
-                        pred_values0 = discriminator(rgb0, depth0[..., None])
-                        pred_values0 = pred_values0.detach().cpu().numpy()
-                        pred_values0 = cv2.applyColorMap(to8b(pred_values0), cv2.COLORMAP_HOT)
-                        logger.add_image('val/d_heatmap_values0', pred_values0, global_step, dataformats='HWC')
 
             if i % args.i_video == 0:
                 # Turn on testing mode

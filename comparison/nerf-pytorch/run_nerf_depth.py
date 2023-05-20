@@ -6,7 +6,7 @@ import imageio
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from load_llff import load_llff_data
+from load_llff_depth import load_llff_data
 from run_nerf_helpers import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -161,9 +161,9 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
             filename = os.path.join(savedir, '{:03d}.png'.format(i))
             imageio.imwrite(filename, rgb8)
 
-            depth8 = depths[-1]
-            filename_depth = os.path.join(f'{savedir}_depth', '{:03d}.npy'.format(i))
-            np.save(filename_depth, depth8)
+            # depth8 = depths[-1]
+            # filename_depth = os.path.join(f'{savedir}_depth', '{:03d}.npy'.format(i))
+            # np.save(filename_depth, depth8)
 
     rgbs = np.stack(rgbs, 0)
     disps = np.stack(disps, 0)
@@ -541,6 +541,7 @@ def config_parser():
                              'depth_all: all depth used as supervision'
                              'depth_partial: only masked area depth used as supervision'
                              'depth_dynamic: learn a dynamic loss weight for the mask region')
+    parser.add_argument("--render_gt", action="store_true")
 
     return parser
 
@@ -555,7 +556,8 @@ def train():
     K = None
     images, depths_, masks, poses, bds, render_poses, i_test = load_llff_data(args.datadir, args.factor,
                                                                               recenter=True, bd_factor=.75,
-                                                                              spherify=args.spherify)
+                                                                              spherify=args.spherify,
+                                                                              render_gt=args.render_gt)
     hwf = poses[0, :3, -1]
     poses = poses[:, :3, :4]
     print('Loaded llff:')
@@ -654,7 +656,14 @@ def train():
     if args.render_all:
         print('RENDER ALL')
         with torch.no_grad():
-            savedir = os.path.join(basedir, expname, 'render_all_{:06d}'.format(start))
+            if 'test' in basedir:
+                if args.render_gt:
+                    savedir = os.path.join(basedir, expname, 'render_test_{:06d}'.format(start))
+                    poses = poses[:40]
+                else:
+                    savedir = os.path.join(basedir, expname, 'render_all_{:06d}'.format(start))
+            else:
+                savedir = os.path.join(basedir, expname, 'render_all_{:06d}'.format(start))
 
             os.makedirs(savedir, exist_ok=True)
             os.makedirs(f'{savedir}_depth', exist_ok=True)
