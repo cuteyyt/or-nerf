@@ -57,5 +57,5 @@ python DS_NeRF/run_nerf_test.py \
   --N_gt 0 \
   --llffhold 8 \
   --datadir ../../data/test/spinnerf_dataset_spinnerf/"$SCENE" \
-  --basedir ../../logs/test/spinnerf/delete \
+  --basedir ../../logs/test_2/spinnerf/delete \
   --render_all --render_gt

@@ -107,7 +107,7 @@ def pre_lama(args):
             if is_refine:
                 mask_refined = mask_refine(mask.copy(), refine_params)
             else:
-                mask_refined = np.copy(mask)
+                mask_refined = mask[:, :, 0]
 
             cv2.imwrite(out_mask_path, mask_refined)
 

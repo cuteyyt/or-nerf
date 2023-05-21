@@ -171,6 +171,7 @@ def main():
     cam_dir = os.path.join(in_dir, 'sparse/0')
     _, images, _ = read_model(path=cam_dir, ext='.bin')
 
+    print('Predict all views\' masks by SAM according to text prompt')
     with tqdm(total=len(images)) as t_bar:
         for image_id, image in images.items():
             image_filename = Path(image.name)

@@ -1229,7 +1229,7 @@ def train():
             out_disps_dirs = f'{out_dirs}_disp'
             os.makedirs(out_disps_dirs, exist_ok=True)
 
-            for _ in range(len(poses[40:])):
+            for _ in range(len(poses)):
                 img = (np.asarray(rgbs[_]) * 255).astype(np.uint8)
                 img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 

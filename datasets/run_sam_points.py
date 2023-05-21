@@ -339,6 +339,7 @@ def read_json(json_path, dataset_name, scene_name):
         res = {
             'down_factor': scene_params['down_factor'],
             'num_points': scene_params['num_points'],
+            'mode': scene_params['mode'],
             'has_neg_prompt': False,
             'has_mask_params': False,
             'has_pred_params': False
@@ -386,19 +387,35 @@ def read_json(json_path, dataset_name, scene_name):
     return res
 
 
-def sample_points_from_mask(mask, ):
+def sample_points_from_mask(mask, mode='use_centre'):
     box = np.nonzero(mask[:, :, 0])
+    print(box)
 
     mask_binary = np.zeros(mask.shape[:2], dtype=np.int32)
     mask_binary[mask[:, :, 0] == 255] = 1
 
     centre = ndimage.center_of_mass(mask_binary)
 
-    points = [
-        [box[1][0], box[0][0]],
-        [int(centre[1]), int(centre[0])],
-        [box[1][-1], box[0][-1]],
-    ]
+    if mode == 'use_all':
+        points = [
+            [box[1][0], box[0][0]],
+            [int(centre[1]), int(centre[0])],
+            [box[1][-1], box[0][-1]],
+        ]
+    elif mode == 'use_edge':
+        points = [
+            [box[1][0], box[0][0]],
+            # [int(centre[1]), int(centre[0])],
+            [box[1][-1], box[0][-1]],
+        ]
+    elif mode == 'use_centre':
+        points = [
+            # [box[1][0], box[0][0]],
+            [int(centre[1]), int(centre[0])],
+            # [box[1][-1], box[0][-1]],
+        ]
+    else:
+        raise ValueError(f'Not implemented mode {mode}')
 
     points = np.asarray(points)
     return points
@@ -419,7 +436,8 @@ def post_sam(args, ):
         text_mask_dir = os.path.join(out_dir, f'{dataset_name}_sam_text', f'{scene_name}', 'masks')
         text_mask_path = sorted([os.path.join(text_mask_dir, f) for f in os.listdir(text_mask_dir)])[0]
         mask = cv2.imread(text_mask_path)
-        opt['init_points'] = sample_points_from_mask(mask)
+        mode = opt['mode']
+        opt['init_points'] = sample_points_from_mask(mask, mode)
         opt['init_labels'] = np.ones(len(opt['init_points']), dtype=np.int32)
 
     # Register related paths

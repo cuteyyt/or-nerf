@@ -23,8 +23,10 @@ Code is tested on RTX3090 or A5000 with CUDA version>11. Torchs compatible with 
 
 ### Data
 We run our methods on 20 scenes from the following datasets:
-1.
-2.
+1. A
+2. B
+3. C
+4. D
 
 ## Reproduce
 **Note**: You can refer to **scripts** folder for running all experiment settings mentioned in the paper.

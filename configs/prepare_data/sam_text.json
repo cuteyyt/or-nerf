@@ -10,10 +10,10 @@
     },
     "qq6": {
       "text": [
-        "book above printer"
+        "book"
       ],
       "factor": 1,
-      "box_threshold": 0.25,
+      "box_threshold": 0.3,
       "text_threshold": 0.25
     },
     "qq10": {
@@ -21,7 +21,7 @@
         "white table"
       ],
       "factor": 1,
-      "box_threshold": 0.25,
+      "box_threshold": 0.3,
       "text_threshold": 0.25
     },
     "qq11": {
@@ -29,7 +29,7 @@
         "statue"
       ],
       "factor": 1,
-      "box_threshold": 0.25,
+      "box_threshold": 0.3,
       "text_threshold": 0.25
     },
     "qq13": {
@@ -37,7 +37,41 @@
         "pool"
       ],
       "factor": 1,
-      "box_threshold": 0.25,
+      "box_threshold": 0.3,
+      "text_threshold": 0.25
+    },
+    "qq16": {
+      "text": [
+        "slogan"
+      ],
+      "factor": 4,
+      "box_threshold": 0.3,
+      "text_threshold": 0.25
+    },
+    "qq17": {
+      "text": [
+        "apple"
+      ],
+      "factor": 4,
+      "box_threshold": 0.3,
+      "text_threshold": 0.25
+    },
+    "qq21": {
+      "text": [
+        "plant"
+      ],
+      "factor": 4,
+      "box_threshold": 0.3,
+      "text_threshold": 0.25
+    }
+  },
+  "llff_real_iconic": {
+    "data5_piano": {
+      "text": [
+        "book"
+      ],
+      "factor": 4,
+      "box_threshold": 0.3,
       "text_threshold": 0.25
     }
   },
@@ -57,12 +91,10 @@
       "factor": 4,
       "box_threshold": 0.3,
       "text_threshold": 0.25
-    }
-  },
-  "llff_real_iconic": {
-    "data5_piano": {
+    },
+    "horns": {
       "text": [
-        "book"
+        "triceratops on the right"
       ],
       "factor": 4,
       "box_threshold": 0.3,
@@ -71,6 +103,14 @@
   },
   "spinnerf_dataset": {
     "1": {
+      "text": [
+        "box"
+      ],
+      "factor": 4,
+      "box_threshold": 0.3,
+      "text_threshold": 0.25
+    },
+    "9": {
       "text": [
         "box"
       ],
@@ -103,14 +143,6 @@
       "text_threshold": 0.25
     },
     "7": {
-      "text": [
-        "box"
-      ],
-      "factor": 4,
-      "box_threshold": 0.3,
-      "text_threshold": 0.25
-    },
-    "9": {
       "text": [
         "box"
       ],

@@ -19,7 +19,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "qq6": {
       "down_factor": 1,
@@ -36,7 +37,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "qq10": {
       "down_factor": 1,
@@ -57,7 +59,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_edge"
     },
     "qq11": {
       "down_factor": 1,
@@ -91,7 +94,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_centre"
     },
     "qq16": {
       "down_factor": 4,
@@ -482,7 +486,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "9": {
       "down_factor": 4,
