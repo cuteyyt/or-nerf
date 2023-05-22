@@ -47,22 +47,22 @@ OR-NeRF
 ©À©¤©¤ comparison # Code for scene object removal
 ©À©¤©¤ configs # Configurations
 ©À©¤©¤ data # Data folder, our code will create several '_suffix' for different usage
-©¦?? ©À©¤©¤ spinnerf_dataset # Original download data
-©¦?? ©À©¤©¤ spinnerf_dataset_depth # Containing inpainted rgb and depth for loss add-ons 
-©¦?? ©À©¤©¤ spinnerf_dataset_sam # Containing inpainted rgb only for training NeRF directly
-©¦?? ©À©¤©¤ spinnerf_dataset_sam_text # Text prompt sam, while no '_text' is gen from points
-©¦?? ©À©¤©¤ spinnerf_dataset_sparse # For training NeRF withou removal directly
-©¦?? ©À©¤©¤ spinnerf_dataset_spinnerf # For training SPIn-NeRF pipeline
-©¦?? ©¸©¤©¤ test # For quantative test, file structure under this is the same as 'data'
+©¦   ©À©¤©¤ spinnerf_dataset # Original download data
+©¦   ©À©¤©¤ spinnerf_dataset_depth # Containing inpainted rgb and depth for loss add-ons 
+©¦   ©À©¤©¤ spinnerf_dataset_sam # Containing inpainted rgb only for training NeRF directly
+©¦   ©À©¤©¤ spinnerf_dataset_sam_text # Text prompt sam, while no '_text' is gen from points
+©¦   ©À©¤©¤ spinnerf_dataset_sparse # For training NeRF withou removal directly
+©¦   ©À©¤©¤ spinnerf_dataset_spinnerf # For training SPIn-NeRF pipeline
+©¦   ©¸©¤©¤ test # For quantative test, file structure under this is the same as 'data'
 ©À©¤©¤ datasets # Code for process data 
 ©À©¤©¤ logs # Logs folder
-©¦?? ©À©¤©¤ nerf # Logs for Ours-NeRF
-©¦?? |   ©À©¤©¤ dir # Reconstruct removal scenes from inpainted priors directly
-©¦?? |   ©À©¤©¤ da # Train with all depth supervision 
-©¦?? |   ©À©¤©¤ dp # Train with partial depth supervision 
-©¦?? |   ©¸©¤©¤ lpips # Train with perceptual loss and all depth supervision
-©¦?? ©À©¤©¤ spinnerf # Logs for SPIn-NeRF, subfolders are similar to NeRF
-©¦?? ©¸©¤©¤ tensorf # logs for Ours-TensoRF, subfolders are similar to NeRF
+©¦   ©À©¤©¤ nerf # Logs for Ours-NeRF
+©¦   |   ©À©¤©¤ dir # Reconstruct removal scenes from inpainted priors directly
+©¦   |   ©À©¤©¤ da # Train with all depth supervision 
+©¦   |   ©À©¤©¤ dp # Train with partial depth supervision 
+©¦   |   ©¸©¤©¤ lpips # Train with perceptual loss and all depth supervision
+©¦   ©À©¤©¤ spinnerf # Logs for SPIn-NeRF, subfolders are similar to NeRF
+©¦   ©¸©¤©¤ tensorf # logs for Ours-TensoRF, subfolders are similar to NeRF
 ©À©¤©¤ prior # Code for running pre-trained models like SAM    
 ©¸©¤©¤ scripts # Scripts for running experiments
 ```
