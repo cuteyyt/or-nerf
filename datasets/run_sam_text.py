@@ -67,7 +67,9 @@ def draw_masks_on_img(img, masks, out_path):
 
 
 def save_masks(masks, out_path):
-    masks_img = (masks * 255).astype(np.uint8)
+    masks[masks >= 1] = 255
+    masks[masks < 1] = 0
+    masks_img = masks.astype(np.uint8)
     cv2.imwrite(out_path, masks_img)
 
 
@@ -199,15 +201,18 @@ def main():
 
                 boxes_filt = boxes_filt.cpu()
                 transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, img.shape[:2]).to(device)
-                # print(transformed_boxes)
 
                 if len(transformed_boxes) != 0:
-                    masks, _, _ = predictor.predict_torch(
-                        point_coords=None,
-                        point_labels=None,
-                        boxes=transformed_boxes.to(device),
-                        multimask_output=False,
-                    )
+                    logits = None
+                    for i in range(5):
+                        masks, _, logits = predictor.predict_torch(
+                            point_coords=None,
+                            point_labels=None,
+                            boxes=transformed_boxes.to(device),
+                            mask_input=logits,
+                            multimask_output=False,
+                            return_logits=True
+                        )
                     # print(masks.shape)
 
                     os.makedirs(os.path.join(out_dir, 'masks'), exist_ok=True)
@@ -219,7 +224,8 @@ def main():
                     img_with_box_path = os.path.join(out_dir, 'imgs_with_boxes', image_filename)
 
                     masks = masks.cpu().numpy()
-                    mask += masks[0][0].astype(np.int32)
+                    for i in range(masks.shape[0]):
+                        mask += masks[i][0].astype(np.int32)
 
                     save_masks(mask.copy(), mask_path)
                     draw_masks_on_img(img.copy(), mask.copy(), img_with_mask_path)

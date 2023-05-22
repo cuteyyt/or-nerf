@@ -18,11 +18,11 @@ python datasets/run_sam_points.py \
   --ckpt_path ckpts/sam/sam_vit_h_4b8939.pth
 
 # --text_prompt to enable text prompt (use --is_test to test spinnerf)
-python datasets/run_sam_points.py \
-  --in_dir "$INDIR" \
-  --out_dir "$OUTDIR" \
-  --dataset_name "$DATASET" \
-  --scene_name "$SCENE" \
-  --json_path configs/prepare_data/sam_points.json \
-  --ckpt_path ckpts/sam/sam_vit_h_4b8939.pth \
-  --text_prompt
+#python datasets/run_sam_points.py \
+#  --in_dir "$INDIR" \
+#  --out_dir "$OUTDIR" \
+#  --dataset_name "$DATASET" \
+#  --scene_name "$SCENE" \
+#  --json_path configs/prepare_data/sam_points.json \
+#  --ckpt_path ckpts/sam/sam_vit_h_4b8939.pth \
+#  --text_prompt

@@ -59,6 +59,7 @@ def mask_refine(mask, kwargs):
     if 'contour_scale_size' in kwargs:
         mask_scaled = np.zeros_like(mask_dilated)
         contours, hierarchies = cv2.findContours(mask_dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # print(len(contours))
 
         assert len(contours) == kwargs['num_masks']
 
@@ -68,5 +69,5 @@ def mask_refine(mask, kwargs):
     else:
         mask_scaled = np.copy(mask_dilated)
 
-    mask_refined = np.copy(mask_scaled)
+    mask_refined = np.copy(mask_dilated)
     return mask_refined

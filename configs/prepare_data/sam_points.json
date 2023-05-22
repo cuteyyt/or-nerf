@@ -38,7 +38,7 @@
       "pred_params": {
         "pred_iters": 5
       },
-      "mode": "use_all"
+      "mode": "use_left"
     },
     "qq10": {
       "down_factor": 1,
@@ -81,7 +81,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "qq13": {
       "down_factor": 1,
@@ -112,7 +113,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "qq17": {
       "down_factor": 4,
@@ -133,7 +135,9 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all",
+      "num_masks": 2
     },
     "qq21": {
       "down_factor": 4,
@@ -153,8 +157,10 @@
       ],
       "num_points": 1,
       "pred_params": {
-        "pred_iters": 5
-      }
+        "pred_iters": 5,
+        "comment": "Add threshold: 0.85 for text prompt"
+      },
+      "mode": "use_all"
     }
   },
   "llff_real_iconic": {
@@ -177,7 +183,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     }
   },
   "nerf_llff_data": {
@@ -200,9 +207,11 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_edge"
     },
     "horns": {
+      "comment": "Remove points_negative and refine_params for text prompt",
       "down_factor": 4,
       "points": [
         [
@@ -261,7 +270,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "fortress": {
       "down_factor": 4,
@@ -282,7 +292,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     }
   },
   "spinnerf_dataset": {
@@ -305,7 +316,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "3": {
       "down_factor": 4,
@@ -326,7 +338,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "4": {
       "down_factor": 4,
@@ -347,7 +360,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "7": {
       "down_factor": 4,
@@ -368,7 +382,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "10": {
       "down_factor": 4,
@@ -389,7 +404,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "12": {
       "down_factor": 4,
@@ -422,7 +438,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "book": {
       "down_factor": 4,
@@ -443,7 +460,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     },
     "trash": {
       "down_factor": 4,
@@ -465,7 +483,8 @@
       "pred_params": {
         "pred_iters": 5,
         "threshold": 0.85
-      }
+      },
+      "mode": "use_all"
     },
     "1": {
       "down_factor": 4,
@@ -508,7 +527,8 @@
       "num_points": 1,
       "pred_params": {
         "pred_iters": 5
-      }
+      },
+      "mode": "use_all"
     }
   }
 }

@@ -50,7 +50,7 @@
     },
     "qq17": {
       "text": [
-        "apple"
+        "apple and phone"
       ],
       "factor": 4,
       "box_threshold": 0.3,
@@ -68,11 +68,11 @@
   "llff_real_iconic": {
     "data5_piano": {
       "text": [
-        "book"
+        "sheet music"
       ],
       "factor": 4,
-      "box_threshold": 0.3,
-      "text_threshold": 0.25
+      "box_threshold": 0.5,
+      "text_threshold": 0.5
     }
   },
   "nerf_llff_data": {
@@ -84,17 +84,17 @@
       "box_threshold": 0.3,
       "text_threshold": 0.25
     },
-    "fortress": {
+    "horns": {
       "text": [
-        "fortress"
+        "small dinosaur skull"
       ],
       "factor": 4,
       "box_threshold": 0.3,
       "text_threshold": 0.25
     },
-    "horns": {
+    "fortress": {
       "text": [
-        "triceratops on the right"
+        "fortress"
       ],
       "factor": 4,
       "box_threshold": 0.3,

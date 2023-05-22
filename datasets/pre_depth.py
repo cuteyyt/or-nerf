@@ -21,6 +21,7 @@ def parse():
     parser.add_argument('--scene', type=str)
 
     parser.add_argument('--json_path', type=str, default='configs/prepare_data/lama.json')
+    parser.add_argument('--sfx', type=str)
     parser.add_argument('--is_test', action='store_true')
 
     args = parser.parse_args()

@@ -15,8 +15,8 @@ python datasets/pre_depth.py \
   --log_dir "$LOGDIR" \
   --in_dir "$INDIR" \
   --out_dir "$OUTDIR" \
-  --dataset_name "$DATASET" \
-  --scene_name "$SCENE" \
+  --dataset "$DATASET" \
+  --scene "$SCENE" \
   --json_path configs/prepare_data/lama.json \
   --sfx "$SFX"
 

@@ -12,6 +12,7 @@ from subprocess import check_output
 import cv2
 import numpy as np
 from scipy import ndimage
+from scipy.ndimage import binary_fill_holes
 from segment_anything import sam_model_registry, SamPredictor
 from tqdm import tqdm
 
@@ -345,6 +346,11 @@ def read_json(json_path, dataset_name, scene_name):
             'has_pred_params': False
         }
 
+        if 'num_masks' in scene_params:
+            res['num_masks'] = scene_params['num_masks']
+        else:
+            res['num_masks'] = 1
+
         init_pts_p = np.asarray(scene_params['points'])
         init_lbs_p = np.ones(len(init_pts_p), dtype=np.int32)
 
@@ -387,37 +393,77 @@ def read_json(json_path, dataset_name, scene_name):
     return res
 
 
-def sample_points_from_mask(mask, mode='use_centre'):
-    box = np.nonzero(mask[:, :, 0])
-    print(box)
-
+def sample_points_from_mask(mask, mode='use_centre', num_masks=1, refine=False):
     mask_binary = np.zeros(mask.shape[:2], dtype=np.int32)
     mask_binary[mask[:, :, 0] == 255] = 1
 
-    centre = ndimage.center_of_mass(mask_binary)
+    if refine:
+        mask_binary = binary_fill_holes(
+            mask_binary,
+            structure=None,
+            output=None,
+            origin=0
+        )
 
-    if mode == 'use_all':
-        points = [
-            [box[1][0], box[0][0]],
-            [int(centre[1]), int(centre[0])],
-            [box[1][-1], box[0][-1]],
-        ]
-    elif mode == 'use_edge':
-        points = [
-            [box[1][0], box[0][0]],
-            # [int(centre[1]), int(centre[0])],
-            [box[1][-1], box[0][-1]],
-        ]
-    elif mode == 'use_centre':
-        points = [
-            # [box[1][0], box[0][0]],
-            [int(centre[1]), int(centre[0])],
-            # [box[1][-1], box[0][-1]],
-        ]
-    else:
-        raise ValueError(f'Not implemented mode {mode}')
+    mask_gray = mask_binary.astype(np.uint8)
+    mask_gray *= 255
+
+    cv2.imwrite('data/ibrnet_data_sam_text/qq21/masks/img000.png', mask_gray)
+
+    masks = np.zeros([num_masks, mask_gray.shape[0], mask_gray.shape[1]], dtype=np.uint8)
+    contours, hierarchy = cv2.findContours(mask_gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    assert len(contours) == num_masks
+    for i, contour in enumerate(contours):
+        pure_bg = np.zeros_like(mask_gray, dtype=np.uint8)
+        cv2.drawContours(pure_bg, [contour], -1, 255, -1)
+        masks[i] = pure_bg
+
+    points = list()
+    for i, mask in enumerate(masks):
+        mask = mask[..., None]
+
+        box = np.nonzero(mask[:, :, 0])
+        mask_binary = np.zeros(mask.shape[:2], dtype=np.int32)
+        mask_binary[mask[:, :, 0] == 255] = 1
+        centre = ndimage.center_of_mass(mask_binary)
+        # print(centre)
+
+        if mode == 'use_all':
+            points += [
+                [box[1][0], box[0][0]],
+                [int(centre[1]), int(centre[0])],
+                [box[1][-1], box[0][-1]],
+            ]
+        elif mode == 'use_edge':
+            points += [
+                [box[1][0], box[0][0]],
+                # [int(centre[1]), int(centre[0])],
+                [box[1][-1], box[0][-1]],
+            ]
+        elif mode == 'use_centre':
+            points += [
+                # [box[1][0], box[0][0]],
+                [int(centre[1]), int(centre[0])],
+                # [box[1][-1], box[0][-1]],
+            ]
+        elif mode == 'use_left':
+            points += [
+                [box[1][0], box[0][0]],
+                [int(centre[1]), int(centre[0])],
+                # [box[1][-1], box[0][-1]],
+            ]
+        elif mode == 'use_right':
+            points += [
+                # [box[1][0], box[0][0]],
+                [int(centre[1]), int(centre[0])],
+                [box[1][-1], box[0][-1]],
+            ]
+        else:
+            raise ValueError(f'Not implemented mode {mode}')
 
     points = np.asarray(points)
+    # print(points.shape)
     return points
 
 
@@ -437,7 +483,9 @@ def post_sam(args, ):
         text_mask_path = sorted([os.path.join(text_mask_dir, f) for f in os.listdir(text_mask_dir)])[0]
         mask = cv2.imread(text_mask_path)
         mode = opt['mode']
-        opt['init_points'] = sample_points_from_mask(mask, mode)
+        num_masks = opt['num_masks']
+        opt['init_points'] = sample_points_from_mask(mask, mode, num_masks,
+                                                     refine=True if scene_name == 'qq21' else False)
         opt['init_labels'] = np.ones(len(opt['init_points']), dtype=np.int32)
 
     # Register related paths
