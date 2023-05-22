@@ -57,10 +57,10 @@ OR-NeRF
 ├── datasets # Code for process data 
 ├── logs # Logs folder
 │   ├── nerf # Logs for Ours-NeRF
-│   |   ├── dir # Reconstruct removal scenes from inpainted priors directly
-│   |   ├── da # Train with all depth supervision 
-│   |   ├── dp # Train with partial depth supervision 
-│   |   └── lpips # Train with perceptual loss and all depth supervision
+│   │   ├── dir # Reconstruct removal scenes from inpainted priors directly
+│   │   ├── da # Train with all depth supervision 
+│   │   ├── dp # Train with partial depth supervision 
+│   │   └── lpips # Train with perceptual loss and all depth supervision
 │   ├── spinnerf # Logs for SPIn-NeRF, subfolders are similar to NeRF
 │   └── tensorf # logs for Ours-TensoRF, subfolders are similar to NeRF
 ├── prior # Code for running pre-trained models like SAM    
