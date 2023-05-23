@@ -104,14 +104,15 @@ sh scripts/data/gen_lama_prior.sh spinnerf_dataset 2 data data
 # Refer to comparison/nerf-pytorch/run_nerf.py for more info
 sh scripts/comparison/nerf/run_nerf_ori.sh 2
 # For TensoRF
+# sh scripts/comparison/tensorf/run_tensorf_ori.sh [scene_name]
+# Refer to comparison/Tensorf/train.py for more info
+sh scripts/comparison/tensorf/run_tensorf_ori.sh 2
 
 # Step 5. Prepare a 'depth' folder containing inpainted rgb and depth priors
-# For NeRF
-# sh scripts/data/nerf/gen_depth.sh [dataset_name] [scene_name] [in_dir] [out_dir]
+# sh scripts/data/gen_depth.sh [dataset_name] [scene_name] [in_dir] [out_dir]
 # Refer to datasets/pre_depth.py for more info
-# Please change LOGDIR in scripts/data/nerf/gen_depth.sh to match your own
-sh scripts/data/nerf/gen_depth.sh spinnerf_dataset 2 data data
-# For TensoRF
+# Please change LOGDIR in scripts/data/gen_depth.sh to match your own
+sh scripts/data/gen_depth.sh spinnerf_dataset 2 data data
 
 # Step 6. Reconstruct deleted scenes directly, this should gen log dir 'delete'
 # For NeRF
@@ -119,6 +120,9 @@ sh scripts/data/nerf/gen_depth.sh spinnerf_dataset 2 data data
 # Refer to comparison/nerf-pytorch/run_nerf.py for more info
 sh scripts/comparison/nerf/run_nerf_delete.sh 2
 # For TensoRF
+# sh scripts/comparison/tensorf/run_tensorf_delete.sh [scene_name]
+# Refer to comparison/Tensorf/train.py for more info
+sh scripts/comparison/tensorf/run_tensorf_delete.sh 2
 
 # Step 7. Reconstruct deleted scenes with depth supervision, 
 # This should gen log dir 'depth_all' or 'depth_partial' 
@@ -128,6 +132,9 @@ sh scripts/comparison/nerf/run_nerf_delete.sh 2
 sh scripts/comparison/nerf/run_nerf_depth_all.sh 2 # Or
 sh scripts/comparison/nerf/run_nerf_depth_partial.sh 2
 # For TensoRF, 'depth partial' is not applicable
+# sh scripts/comparison/tensorf/run_tensorf_depth.sh [scene_name]
+# Refer to comparison/Tensorf/train.py for more info
+sh scripts/comparison/tensorf/run_tensorf_depth.sh 2
 
 # Step 8. Reconstruct deleted scenes with depth supervision and perceptual loss
 # This should gen log dir 'lpips' 
@@ -135,6 +142,9 @@ sh scripts/comparison/nerf/run_nerf_depth_partial.sh 2
 # sh scripts/comparison/nerf/run_nerf_lpips.sh [scene_name]
 # Refer to comparison/nerf-pytorch/run_nerf_lpips.py for more info
 sh scripts/comparison/nerf/run_nerf_lpips.sh 2
+# sh scripts/comparison/tensorf/run_tensorf_lpips.sh [scene_name]
+# Refer to comparison/Tensorf/train.py for more info
+sh scripts/comparison/tensorf/run_tensorf_lpips.sh 2
 # For TensoRF
 ```
 

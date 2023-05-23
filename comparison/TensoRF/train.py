@@ -93,6 +93,13 @@ def render_test(args):
         all_dataset = dataset(args.datadir, split='all', downsample=args.downsample_train, is_stack=True)
         PSNRs_test = evaluation(all_dataset, tensorf, args, renderer, f'{logfolder}/{args.expname}/imgs_all/',
                                 N_vis=-1, N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
+    
+    if args.render_gt:
+        print("-----------render gt-----------")
+        os.makedirs(f'{logfolder}/{args.expname}/imgs_gt', exist_ok=True)
+        all_dataset = dataset(args.datadir, split='all', downsample=args.downsample_train, is_stack=True)
+        PSNRs_test = evaluation(all_dataset, tensorf, args, renderer, f'{logfolder}/{args.expname}/imgs_gt/',
+                                N_vis=-1, N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
 
 
 def cal_box(mask):
@@ -194,6 +201,8 @@ def reconstruction(args):
     print(f"initial TV_weight density: {TV_weight_density} appearance: {TV_weight_app}")
 
     pbar = tqdm(range(args.n_iters), miniters=args.progress_refresh_rate, file=sys.stdout)
+    cnt = 0
+    cnt_1 = 0
     for iteration in pbar:
 
         ray_idx = trainingSampler.nextids()
@@ -218,42 +227,34 @@ def reconstruction(args):
             img_list, _H, _W = train_dataset.get_same_rays()
             images, masks, poses = train_dataset.images, train_dataset.masks, train_dataset.poses
             focal, directions = train_dataset.focal, train_dataset.directions
-            # print(masks)
 
-            cnt = 0
             for i in img_list:
                 c2w = torch.FloatTensor(poses[i])
                 image = images[i]
                 mask = masks[i]
-                # print(mask.shape)
                 box = train_dataset.cal_box(mask)
-                # print("box shape: ", box)
 
-                # box_shape = np.array([box[3] - box[1], box[2] - box[0]])
+                
                 img_shape = np.array([_H, _W])
-                patch_shape = img_shape // 16
-                # print("patch shape: ", patch_shape)
-                # print("patch shape: ", patch_shape)
-                # patch_shape = np.array([np.clip(patch_shape[0], 50, 64), np.clip(patch_shape[1], 50, 64)])
+                if args.datadir.endswith("qq16") or args.datadir.endswith("qq6"):
+                    box_shape = np.array([box[3] - box[1], box[2] - box[0]])
+                    patch_shape = box_shape // 4
+                    patch_shape = np.array([np.clip(patch_shape[0], 32, 64), np.clip(patch_shape[1], 32, 64)])
+                else:
+                    patch_shape = img_shape // 16
 
                 rays_o, rays_d = get_rays(directions, c2w)  # both (h*w, 3)
-                rays_o, rays_d = ndc_rays_blender(_H, _W, focal[0], 1.0, rays_o, rays_d)
-                # print("ray shape: ", rays_o.shape, rays_d.shape)
+                rays_o, rays_d = ndc_rays_blender(_H, _W, focal[0], 1.0, rays_o.to(device), rays_d.to(device))
                 rays_o = rays_o.reshape(_H, _W, 3)
                 rays_d = rays_d.reshape(_H, _W, 3)
-                # print("H W: ", _H, _W)
 
-                random_point_x = np.random.randint(box[0], max(box[2] - patch_shape[1], box[0]))
-                random_point_y = np.random.randint(box[1], max(box[3] - patch_shape[0], box[1]))
-                # bdmin_x, bdmax_x = box[0], max(box[2] - patch_shape[0], box[0])
-                # bdmin_y, bdmax_y = box[1], max(box[3] - patch_shape[1], box[1])
-                # area_x, area_y = bdmax_x - bdmin_x, bdmax_y - bdmin_y
-                # random_point_x = min(bdmin_x + (iteration * 4 + cnt) // area_x, bdmax_x)
-                # random_point_y = min(bdmin_y + (iteration * 4 + cnt) % area_y, bdmax_y)
-                # print((iteration * 4 + cnt) // area_x, (iteration * 4 + cnt) % area_y)
-                cnt += 1
-                # print(area_x * area_y)
-                # random_point_x = bdmin_x + iteration
+                try:
+                    cnt += 1
+                    random_point_x = np.random.randint(box[0], max(box[2] - patch_shape[1], box[0]))
+                    random_point_y = np.random.randint(box[1], max(box[3] - patch_shape[0], box[1]))
+                except:
+                    cnt_1 += 1
+                    continue
 
                 patch_indices_x = torch.linspace(
                     random_point_x, random_point_x + patch_shape[1], patch_shape[1], dtype=torch.int32)
@@ -263,24 +264,18 @@ def reconstruction(args):
                     [[[patch_indices_x[m], patch_indices_y[n]] for n in range(patch_shape[0])] for m in
                      range(patch_shape[1])])
                 select_coords = select_coords.reshape(-1, 2).long()
-                # print("select coords: ", select_coords)
 
                 target_patch = image[select_coords[:, 0], select_coords[:, 1]]
                 target_patch = torch.stack(
                     [target_patch[k * patch_shape[1]:(k + 1) * patch_shape[1], :] for k in range(patch_shape[0])])
                 target_patch = target_patch.permute(2, 0, 1).unsqueeze(0)
                 targets.append(target_patch)
-                # print("target patch: ", target_patch.shape)
 
-                # print(select_coords.shape, rays_o.shape)
-                # print(select_coords[:, 0], select_coords[:, 1])
                 rays_o = rays_o[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
                 rays_d = rays_d[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)
-                # print(rays_o.shape, rays_d.shape)
                 rays = torch.cat([rays_o, rays_d], 1)
-                # print(rays.shape)
 
-                # print("perceptual: ", rays.shape)
+                
                 rgb_p, alphas_map, depth_p, weights, uncertainty = renderer(rays, tensorf, chunk=args.batch_size,
                                                                             N_samples=nSamples, white_bg=white_bg,
                                                                             ndc_ray=ndc_ray, device=device,
@@ -292,7 +287,6 @@ def reconstruction(args):
 
             targets = torch.cat(targets).to(device)
             rgbs = torch.cat(rgbs).to(device)
-            # print(rgbs.shape, targets.shape)
 
             total_loss += Lpips_loss_weight * perceptual_loss(rgbs, targets).mean()
 
@@ -412,6 +406,9 @@ def reconstruction(args):
         all_dataset = dataset(args.datadir, split='all', downsample=args.downsample_train, is_stack=True)
         PSNRs_test = evaluation(all_dataset, tensorf, args, renderer, f'{logfolder}/imgs_all/',
                                 N_vis=-1, N_samples=-1, white_bg=white_bg, ndc_ray=ndc_ray, device=device)
+    
+    print("try and not try: ", cnt, cnt_1)
+    np.savetxt(f'{logfolder}/trynum.txt', np.asarray([cnt, cnt_1, cnt/(cnt+cnt_1+1)]))
 
 
 if __name__ == '__main__':

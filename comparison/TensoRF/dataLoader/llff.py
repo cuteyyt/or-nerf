@@ -177,19 +177,10 @@ class LLFFDataset(Dataset):
         # test = 2
 
         if self.is_masks:
-            self.masks_paths = sorted(glob.glob(os.path.join(self.root_dir, 'labeltmux /*png')))
+            self.masks_paths = sorted(glob.glob(os.path.join(self.root_dir, 'label/*png'))) 
 
-        if "gt" in self.root_dir:
-            print("gt")
-            poses_bounds = poses_bounds[:40]
-        elif "spinnerf_dataset" in self.root_dir:
-            print("spinnerf dataset")
-            poses_bounds = poses_bounds[40:]
-
-        if self.root_dir.endswith("sparse/qq3") or self.root_dir.endswith("sparse/qq6") or self.root_dir.endswith(
-                "sparse/qq10") \
-                or self.root_dir.endswith("sparse/qq11") or self.root_dir.endswith(
-            "sparse/qq13") or self.root_dir.endswith('sam/qq3'):
+        if self.root_dir.endswith("qq3") or self.root_dir.endswith("qq6") or self.root_dir.endswith("qq10") \
+                or self.root_dir.endswith("qq11") or self.root_dir.endswith("qq13"):
             self.image_paths = sorted(glob.glob(os.path.join(self.root_dir, 'images_1/*png')))
         else:
             self.image_paths = sorted(glob.glob(os.path.join(self.root_dir, 'images_4/*png')))
