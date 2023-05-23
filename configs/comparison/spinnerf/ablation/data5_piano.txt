@@ -3,7 +3,7 @@ datadir = ../../data/llff_real_iconic_spinnerf/data5_piano
 
 N_gt = 40
 
-basedir = ../../logs/spinnerf/delete
+basedir = ../../logs/spinnerf/ablation
 dataset_type = llff
 
 factor = 4

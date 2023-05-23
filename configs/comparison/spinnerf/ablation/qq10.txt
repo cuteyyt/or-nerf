@@ -3,7 +3,7 @@ datadir = ../../data/ibrnet_data_spinnerf/qq10
 
 N_gt = 40
 
-basedir = ../../logs/spinnerf/delete
+basedir = ../../logs/spinnerf/ablation
 dataset_type = llff
 
 factor = 1

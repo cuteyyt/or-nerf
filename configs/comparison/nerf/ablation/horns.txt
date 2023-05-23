@@ -2,7 +2,7 @@ dataset = nerf_llff_data
 scene = horns
 
 expname = horns
-basedir = ./logs/nerf_depth
+basedir = ./logs/nerf
 datadir = ./data/nerf_llff_data_depth/horns
 
 factor = 4

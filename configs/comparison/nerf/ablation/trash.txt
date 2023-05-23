@@ -2,7 +2,7 @@ dataset = spinnerf_dataset
 scene = trash
 
 expname = trash
-basedir = ./logs/nerf_depth
+basedir = ./logs/nerf
 datadir = ./data/spinnerf_dataset_depth/trash
 
 factor = 4

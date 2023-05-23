@@ -3,7 +3,7 @@ datadir = ../../data/nerf_llff_data_spinnerf/horns
 
 N_gt = 40
 
-basedir = ../../logs/spinnerf/delete
+basedir = ../../logs/spinnerf/ablation
 dataset_type = llff
 
 factor = 4

@@ -2,7 +2,7 @@ dataset = spinnerf_dataset
 scene = 3
 
 expname = 3
-basedir = ./logs/nerf_depth
+basedir = ./logs/nerf
 datadir = ./data/spinnerf_dataset_depth/3
 
 factor = 4

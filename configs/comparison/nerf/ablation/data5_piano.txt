@@ -2,7 +2,7 @@ dataset = llff_real_iconic
 scene = data5_piano
 
 expname = data5_piano
-basedir = ./logs/nerf_depth
+basedir = ./logs/nerf
 datadir = ./data/llff_real_iconic_depth/data5_piano
 
 factor = 4

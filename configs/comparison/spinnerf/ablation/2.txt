@@ -3,7 +3,7 @@ datadir = ../../data/spinnerf_dataset_spinnerf/2
 
 N_gt = 40
 
-basedir = ../../logs/spinnerf/delete
+basedir = ../../logs/spinnerf/ablation
 dataset_type = llff
 
 factor = 4

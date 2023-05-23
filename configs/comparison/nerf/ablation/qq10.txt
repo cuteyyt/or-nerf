@@ -2,7 +2,7 @@ dataset = ibrnet_data
 scene = qq10
 
 expname = qq10
-basedir = ./logs/nerf_depth
+basedir = ./logs/nerf
 datadir = ./data/ibrnet_data_depth/qq10
 
 factor = 1

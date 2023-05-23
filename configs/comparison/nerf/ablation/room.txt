@@ -2,7 +2,7 @@ dataset = nerf_llff_data
 scene = room
 
 expname = room
-basedir = ./logs/nerf_depth
+basedir = ./logs/nerf
 datadir = ./data/nerf_llff_data_depth/room
 
 factor = 4

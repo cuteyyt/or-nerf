@@ -2,7 +2,7 @@ dataset = nerf_llff_data
 scene = fortress
 
 expname = fortress
-basedir = ./logs/nerf_depth
+basedir = ./logs/nerf
 datadir = ./data/nerf_llff_data_depth/fortress
 
 factor = 4
