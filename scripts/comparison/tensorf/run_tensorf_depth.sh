@@ -8,11 +8,11 @@ python comparison/Tensorf/train.py --config configs/comparison/tensorf/ablation/
 # Run spinnerf test
 # python comparison/Tensorf/train.py --config configs/comparison/tensorf/ablation/"$SCENE".txt \
 #  --datadir data/test/spinnerf_dataset_sam/"$SCENE" \
-#  --basedir ./logs/test/tensorf/da
+#  --basedir ./logs/test/tensorf/depth_all
 
 # python comparison/Tensorf/train.py --config configs/comparison/tensorf/ablation/"$SCENE".txt \
 #  --datadir data/test/spinnerf_dataset_gt/"$SCENE" \
-#  --basedir ./logs/test/tensorf/da
-#  --ckpts ./logs/test/tensorf/da/"$SCENE"/"$SCENE".th
+#  --basedir ./logs/test/tensorf/depth_all
+#  --ckpts ./logs/test/tensorf/depth_all/"$SCENE"/"$SCENE".th
 #  --render_only=1 --render_gt=1
 

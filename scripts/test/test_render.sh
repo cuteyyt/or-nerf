@@ -79,14 +79,14 @@ python datasets/test.py --pred_dir logs/test/tensorf/delete/book/imgs_gt --targe
 python datasets/test.py --pred_dir logs/test/tensorf/delete/trash/imgs_gt --target_dir data/test/spinnerf_dataset_gt/trash/images_4 --mode render
 
 # tensorf + depth
-python datasets/test.py --pred_dir logs/test/tensorf/da/2/imgs_gt --target_dir data/test/spinnerf_dataset_gt/2/images_4 --mode render
-python datasets/test.py --pred_dir logs/test/tensorf/da/3/imgs_gt --target_dir data/test/spinnerf_dataset_gt/3/images_4 --mode render
-python datasets/test.py --pred_dir logs/test/tensorf/da/4/imgs_gt --target_dir data/test/spinnerf_dataset_gt/4/images_4 --mode render
-python datasets/test.py --pred_dir logs/test/tensorf/da/7/imgs_gt --target_dir data/test/spinnerf_dataset_gt/7/images_4 --mode render
-python datasets/test.py --pred_dir logs/test/tensorf/da/10/imgs_gt --target_dir data/test/spinnerf_dataset_gt/10/images_4 --mode render
-python datasets/test.py --pred_dir logs/test/tensorf/da/12/imgs_gt --target_dir data/test/spinnerf_dataset_gt/12/images_4 --mode render
-python datasets/test.py --pred_dir logs/test/tensorf/da/book/imgs_gt --target_dir data/test/spinnerf_dataset_gt/book/images_4 --mode render
-python datasets/test.py --pred_dir logs/test/tensorf/da/trash/imgs_gt --target_dir data/test/spinnerf_dataset_gt/trash/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/2/imgs_gt --target_dir data/test/spinnerf_dataset_gt/2/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/3/imgs_gt --target_dir data/test/spinnerf_dataset_gt/3/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/4/imgs_gt --target_dir data/test/spinnerf_dataset_gt/4/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/7/imgs_gt --target_dir data/test/spinnerf_dataset_gt/7/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/10/imgs_gt --target_dir data/test/spinnerf_dataset_gt/10/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/12/imgs_gt --target_dir data/test/spinnerf_dataset_gt/12/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/book/imgs_gt --target_dir data/test/spinnerf_dataset_gt/book/images_4 --mode render
+python datasets/test.py --pred_dir logs/test/tensorf/depth_all/trash/imgs_gt --target_dir data/test/spinnerf_dataset_gt/trash/images_4 --mode render
 
 # tensorf + lpips
 python datasets/test.py --pred_dir logs/test/tensorf/lpips/2/imgs_gt --target_dir data/test/spinnerf_dataset_gt/2/images_4 --mode render
