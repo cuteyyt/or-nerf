@@ -1,6 +1,6 @@
 # OR-NeRF: Object Removing from 3D Scenes Guided by Multiview Segmentation with Neural Radiance Fields
 
-[**Project Page**]() | [**Paper**](https://arxiv.org/abs/2305.10503) | [**Supplementary Materials**]()
+[**Project Page**](https://ornerf.github.io/) | [**Paper**](https://arxiv.org/abs/2305.10503) | [**Supplementary Materials**]()
 
 Pytorch Implementation of OR-NeRF. OR-NeRF removes objects from 3D scenes with points or text prompts on only one image. To realise, OR-NeRF first uses [**SAM**](https://github.com/facebookresearch/segment-anything) to predict multiview masks and [**LaMa**](https://github.com/advimman/lama) to inpaint the unwanted region. Then, scene with objects deleted can be reconstructed from inpainting priors with Neural Radiance Fields.
 
@@ -76,7 +76,7 @@ OR-NeRF
 ```shell
 # Step 1. Prepare a 'sparse' folder for training NeRF without deletion
 # sh scripts/data/gen_sparse.sh [dataset_name] [scene_name] [in_dir] [out_dir]
-# Refer to datasets/pre_sparse.py, prior/LLFF for more info 
+# Refer to datasets/pre_sparse.py, prior/LLFF for more info
 sh scripts/data/gen_sparse.sh spinnerf_dataset 2 data data
 
 # If using text prompt, first convert this prompt to points prompt ---> 'sam_text'
@@ -86,14 +86,14 @@ sh scripts/data/gen_mask_sam_text.sh spinnerf_dataset 2 data data
 
 # Step 2. Prepare a 'sam' folder containing multiview masks from points prompt
 # sh scripts/data/gen_mask_sam_points.sh [dataset_name] [scene_name] [in_dir] [out_dir]
-# Refer to datasets/run_sam_points.py, prior/segment-anything for more info 
+# Refer to datasets/run_sam_points.py, prior/segment-anything for more info
 sh scripts/data/gen_mask_sam_points.sh spinnerf_dataset 2 data data
 
 # If using text prompt, uncomment --text_prompt in scripts/data/gen_mask_sam_points.sh and comment the other command for points prompt
 
 # Step 3. Add inpainted RGB priors to 'sam' or 'sam_text' folder
 # sh scripts/data/gen_lama_prior.sh [dataset_name] [scene_name] [in_dir] [out_dir]
-# Refer to datasets/pre_lama.py, datasets/post_lama.py and prior/LaMa for more info 
+# Refer to datasets/pre_lama.py, datasets/post_lama.py and prior/LaMa for more info
 sh scripts/data/gen_lama_prior.sh spinnerf_dataset 2 data data
 
 # If using text prompt, change 'SFX=sam' to 'SFX=sam_text' in scripts/data/gen_lama_prior.sh
@@ -124,9 +124,9 @@ sh scripts/comparison/nerf/run_nerf_delete.sh 2
 # Refer to comparison/Tensorf/train.py for more info
 sh scripts/comparison/tensorf/run_tensorf_delete.sh 2
 
-# Step 7. Reconstruct deleted scenes with depth supervision, 
-# This should gen log dir 'depth_all' or 'depth_partial' 
-# For NeRF, mode controls 'depth all' or 'dpeth partial'
+# Step 7. Reconstruct deleted scenes with depth supervision,
+# This should gen log dir 'depth_all' or 'depth_partial'
+# For NeRF, mode controls 'depth all' or 'depth partial'
 # sh scripts/comparison/nerf/run_nerf_depth.sh [scene_name] [mode]
 # Refer to comparison/nerf-pytorch/run_nerf_depth.py for more info
 sh scripts/comparison/nerf/run_nerf_depth_all.sh 2 # Or
@@ -137,7 +137,7 @@ sh scripts/comparison/nerf/run_nerf_depth_partial.sh 2
 sh scripts/comparison/tensorf/run_tensorf_depth.sh 2
 
 # Step 8. Reconstruct deleted scenes with depth supervision and perceptual loss
-# This should gen log dir 'lpips' 
+# This should gen log dir 'lpips'
 # For NeRF
 # sh scripts/comparison/nerf/run_nerf_lpips.sh [scene_name]
 # Refer to comparison/nerf-pytorch/run_nerf_lpips.py for more info
@@ -146,7 +146,6 @@ sh scripts/comparison/nerf/run_nerf_lpips.sh 2
 # sh scripts/comparison/tensorf/run_tensorf_lpips.sh [scene_name]
 # Refer to comparison/Tensorf/train.py for more info
 sh scripts/comparison/tensorf/run_tensorf_lpips.sh 2
-
 ```
 
 ### SPIn-NeRF Comparison
