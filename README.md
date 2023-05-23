@@ -142,10 +142,11 @@ sh scripts/comparison/tensorf/run_tensorf_depth.sh 2
 # sh scripts/comparison/nerf/run_nerf_lpips.sh [scene_name]
 # Refer to comparison/nerf-pytorch/run_nerf_lpips.py for more info
 sh scripts/comparison/nerf/run_nerf_lpips.sh 2
+# For TensoRF
 # sh scripts/comparison/tensorf/run_tensorf_lpips.sh [scene_name]
 # Refer to comparison/Tensorf/train.py for more info
 sh scripts/comparison/tensorf/run_tensorf_lpips.sh 2
-# For TensoRF
+
 ```
 
 ### SPIn-NeRF Comparison
