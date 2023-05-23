@@ -1,7 +1,7 @@
 # OR-NeRF: Object Removing from 3D Scenes Guided by Multiview Segmentation with Neural Radiance Fields
 
-[**Project Page**](https://ornerf.github.io/) | [**Paper**](https://arxiv.org/abs/2305.10503) | [**Supplementary
-Materials**](assets/files/OR-NeRF%20Supplementary%20Material.pdf)
+[**Project Page**](https://ornerf.github.io/) | [**Paper**](https://arxiv.org/abs/2305.10503) | 
+[**Supplementary Materials**](assets/files/OR-NeRF%20Supplementary%20Material.pdf)
 
 Pytorch Implementation of OR-NeRF. OR-NeRF removes objects from 3D scenes with points or text prompts on only one image.
 To realise, OR-NeRF first uses [**SAM**](https://github.com/facebookresearch/segment-anything) to predict multiview
@@ -9,8 +9,8 @@ masks and [**LaMa**](https://github.com/advimman/lama) to inpaint the unwanted r
 can be reconstructed from inpainting priors with Neural Radiance Fields.
 
 <p float="center">
-    <img src="assets/imgs/ori.gif" alt="Original" width="480">
-    <img src="assets/imgs/del.gif" alt="Removal" width="480">
+    <img src="assets/imgs/ori.gif" alt="Original" width="320">
+    <img src="assets/imgs/del.gif" alt="Removal" width="320">
 </p>
 
 
@@ -220,8 +220,8 @@ If you find OR-NeRF useful in your work, please consider citing it:
 }
 ```
 
-This repository is developed on [**NeRF-Pytorch**](https://github.com/yenchenlin/nerf-pytorch), [**SPIn-NeRF
-**](https://github.com/SamsungLabs/SPIn-NeRF), [**TensoRF**](https://github.com/apchenstu/TensoRF), [**SAM
-**](https://github.com/facebookresearch/segment-anything), [**Grounded-SAM
-**](https://github.com/IDEA-Research/Grounded-Segment-Anything) and [**LaMa**](https://github.com/advimman/lama). Thanks
-for their great work, and you may also consider cite them.
+This repository is developed on [**NeRF-Pytorch**](https://github.com/yenchenlin/nerf-pytorch),
+[**SPIn-NeRF**](https://github.com/SamsungLabs/SPIn-NeRF), [**TensoRF**](https://github.com/apchenstu/TensoRF),
+[**SAM**](https://github.com/facebookresearch/segment-anything),
+[**Grounded-SAM**](https://github.com/IDEA-Research/Grounded-Segment-Anything) and
+[**LaMa**](https://github.com/advimman/lama). Thanks for their great work, and you may also consider cite them.
