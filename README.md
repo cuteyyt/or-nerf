@@ -1,6 +1,6 @@
 # OR-NeRF: Object Removing from 3D Scenes Guided by Multiview Segmentation with Neural Radiance Fields
 
-[**Project Page**](https://ornerf.github.io/) | [**Paper**](https://arxiv.org/abs/2305.10503) | 
+[**Project Page**](https://ornerf.github.io/) | [**Paper**](https://arxiv.org/abs/2305.10503) |
 [**Supplementary Materials**](assets/files/OR-NeRF%20Supplementary%20Material.pdf)
 
 Pytorch Implementation of OR-NeRF. OR-NeRF removes objects from 3D scenes with points or text prompts on only one image.
@@ -28,7 +28,8 @@ pip install -r requirements.txt
 ```
 
 Code has been tested on CUDA version 11 or higher with RTX3090 or A5000. Torch versions that are compatible with your
-CUDA version should work.
+CUDA version should work. You may download checkpoints for running SAM, Grounding-DINO and LaMa by following their
+instructions.
 
 ### Data
 
