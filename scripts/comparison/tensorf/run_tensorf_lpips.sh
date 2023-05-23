@@ -1,8 +1,8 @@
-# Run tensorf original version with delete scenes
+# Run tensorf training with depth prior and lpips loss
 SCENE=$1
 set -e
 
-# Run tensorf with delete scenes
+# Run tensorf da+lpips
 python comparison/Tensorf/train.py --config configs/comparison/tensorf/ablation/"$SCENE".txt --depth --Depth_loss_weight=1.0 --lpips --Lpips_loss_weight=1e-2
 
 # Run spinnerf test

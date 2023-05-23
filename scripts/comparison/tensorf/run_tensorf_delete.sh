@@ -1,9 +1,10 @@
-# Run nerf training with depth prior, all mode
+# Run tensorf original version with delete scenes
 SCENE=$1
 set -e
 
-# Run tensorf da
+# Run tensorf with delete scenes
 python comparison/Tensorf/train.py --config configs/comparison/tensorf/delete/"$SCENE".txt
+
 # Run spinnerf test
 #python comparison/Tensorf/train.py --config configs/comparison/tensorf/delete/"$SCENE".txt \
 #  --datadir data/test/spinnerf_dataset_sam/"$SCENE" \
