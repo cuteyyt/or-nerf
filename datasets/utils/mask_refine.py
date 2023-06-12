@@ -69,5 +69,5 @@ def mask_refine(mask, kwargs):
     else:
         mask_scaled = np.copy(mask_dilated)
 
-    mask_refined = np.copy(mask_dilated)
+    mask_refined = np.copy(mask_scaled)
     return mask_refined
