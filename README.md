@@ -199,7 +199,9 @@ sh scripts/comparison/spinnerf/run_spinnerf_no_lpips_no_depth.sh 2
 
 To run the test process, we follow a similar procedure as the reconstruction process described above. However, to ensure
 clarity, we create a separate folder named *data/test* specifically for running tests. Please refer to the related
-scripts and Python files for controlling the "test" process. If you have any questions, please feel free to raise an
+scripts and Python files for controlling the "test" process. 
+
+As we haven't check all scripts after we refactor the code, if you have any questions, please feel free to raise an
 issue or reach out to us directly.
 
 **Note**: You may check *scripts/comparison/run_net.sh* and *scripts/data/preprocess_data.sh* to run multiple scenes

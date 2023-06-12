@@ -80,7 +80,7 @@ def main():
     is_test = args.is_test
     params = {'img_file_type': args.img_file_type, 'is_test': args.is_test}
 
-    if is_test:
+    if is_test or dataset_name == 'spinnerf_dataset':
         params['img_indices'] = 40
 
     # Read config json
