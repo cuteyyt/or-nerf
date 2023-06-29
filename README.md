@@ -23,7 +23,12 @@ can be reconstructed from inpainting priors with Neural Radiance Fields.
 Conda is recommended.
 
 ```shell
+git clone git@github.com:cuteyyt/or-nerf.git
+cd or-nerf
+
 conda create -n ornerf python=3.9
+conda activate ornerf
+
 pip install -r requirements.txt
 ```
 
