@@ -96,8 +96,8 @@ def main():
     handle_imgs(in_ori_img_dir, out_ori_img_dir, params)
 
     # Warp a video
-    in_img_dir = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
-    out_path = os.path.join(in_dir, f'{dataset_name}_sparse', scene_name, 'input_views.mp4')
+    in_img_dir = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, f'images_{params["down_factor"]}')
+    out_path = os.path.join(out_dir, f'{dataset_name}_sparse', scene_name, 'input_views.mp4')
     imgs2video(in_img_dir, out_path, params['img_file_type'], fps=10)
 
 
